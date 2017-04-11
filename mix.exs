@@ -20,6 +20,8 @@ defmodule Hub.Mixfile do
   end
 
   defp deps do
-    []
+    [
+      {:phoenix_pubsub, "~> 1.0"}
+    ]
   end
 end
