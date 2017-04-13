@@ -13,7 +13,7 @@ defmodule Hub.Application do
       worker(Hub.Tracker, [[name: Hub.Tracker, pubsub_server: Hub.PubSub]])
     ]
 
-    opts = [strategy: :one_for_one, name: MyApp.Supervisor]
+    opts = [strategy: :one_for_one, name: Hub.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end
