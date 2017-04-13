@@ -1,6 +1,6 @@
 defmodule Hub.Application do
   @moduledoc """
-  The OTP application for Hub
+  OTP application for Hub
   """
 
   use Application
@@ -9,10 +9,11 @@ defmodule Hub.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      supervisor(Phoenix.PubSub.PG2, [Hub.PubSub, []])
+      supervisor(Phoenix.PubSub.PG2, [Hub.PubSub, []]),
+      worker(Hub.Tracker, [[name: Hub.Tracker, pubsub_server: Hub.PubSub]])
     ]
 
-    opts = [strategy: :one_for_one, name: Hub.Supervisor]
+    opts = [strategy: :one_for_one, name: MyApp.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end
