@@ -8,26 +8,21 @@ Example:
 
 ```elixir
 # In one process:
-Hub.subscribe("some_channel", {:hello, name})
+Hub.subscribe("some_channel", %{name: name, age: age} when age > 42)
 receive do
-  {:hello, name} -> IO.puts("Hello #{name}")
+  %{name: name} -> IO.puts("#{name} is older than 42")
 end
 
 # In another process:
-Hub.publish("some_channel", {:hello, "World"})
+Hub.publish("some_channel", %{name: "John", age: 48})
 ```
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `hub` to your list of dependencies in `mix.exs`:
+Add `hub` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [{:hub, "~> 0.1.0"}]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/hub](https://hexdocs.pm/hub).
