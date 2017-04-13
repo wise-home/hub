@@ -44,7 +44,10 @@ defmodule Hub.Mixfile do
     [
       licenses: ["MIT"],
       maintainers: ["Vesta Merkur", "Lasse Ebert"],
-      links: %{github: "https://github.com/vesta-merkur/hub"}
+      links: %{
+        github: "https://github.com/vesta-merkur/hub",
+        docs: "https://hexdocs.pm/hub/"
+      }
     ]
   end
 end
