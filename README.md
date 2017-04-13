@@ -87,3 +87,9 @@ Subscribe another process:
 ```elixir
 Hub.subscribe("My channel", {:hello, name}, pid: child_pid)
 ```
+
+Subscribe to all messages in a channel:
+
+```elixir
+Hub.subscribe("My channel", _)
+```
