@@ -9,7 +9,9 @@ defmodule Hub.Mixfile do
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
       deps: deps(),
-      dialyzer: [ignore_warnings: "dialyzer.ignore-warnings"]
+      dialyzer: [ignore_warnings: "dialyzer.ignore-warnings"],
+      description: description(),
+      package: package()
     ]
   end
 
@@ -26,6 +28,22 @@ defmodule Hub.Mixfile do
 
       {:credo, "~> 0.5", only: [:dev, :test]},
       {:dialyxir, "~> 0.4", only: [:dev, :test]},
+    ]
+  end
+
+  defp description do
+    """
+    Hub is a PubSub hub with pattern matching subscription.
+
+    It builds on top of phoenix_pubsub, but phoenix is not required to use Hub.
+    """
+  end
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      maintainers: ["Vesta Merkur", "Lasse Ebert"],
+      links: %{github: "https://github.com/vesta-merkur/hub"}
     ]
   end
 end
