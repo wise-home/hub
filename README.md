@@ -68,6 +68,28 @@ To publish a message in a channel, call `Hub.publish/2`:
 Hub.publish("My channel", {:any, "valid", %{elixir: "term"}})
 ```
 
+When a message is published to the pid of a subscription, it is send directly and unmodified to that process' mailbox.
+The subscriber should `receive` the message:
+
+```elixir
+Hub.subscribe("Channel", {:hello, name})
+Hub.subscribe("Channel", {:goodbye, name})
+
+receive do
+  {:hello, name} -> IO.puts("Hello #{name}")
+  {:goodbye, name} -> IO.puts("Goodbye #{name}")
+end
+```
+
+If the receiver is a GenServer, and you don't want a blocking `receive`, use `handle_info` instead:
+
+```elixir
+def handle_info({:hello, name}, state) do
+  IO.puts("Hello #{name}")
+  {:noreply, state}
+end
+```
+
 ## Examples
 
 Subscribe only once to a message:
