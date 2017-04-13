@@ -8,7 +8,8 @@ defmodule Hub.Mixfile do
       elixir: "~> 1.4",
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
-      deps: deps()
+      deps: deps(),
+      dialyzer: [ignore_warnings: "dialyzer.ignore-warnings"]
     ]
   end
 
@@ -23,7 +24,8 @@ defmodule Hub.Mixfile do
     [
       {:phoenix_pubsub, "~> 1.0"},
 
-      {:credo, "~> 0.5", only: [:dev, :test]}
+      {:credo, "~> 0.5", only: [:dev, :test]},
+      {:dialyxir, "~> 0.4", only: [:dev, :test]},
     ]
   end
 end
