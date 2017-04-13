@@ -21,7 +21,9 @@ defmodule Hub.Mixfile do
 
   defp deps do
     [
-      {:phoenix_pubsub, "~> 1.0"}
+      {:phoenix_pubsub, "~> 1.0"},
+
+      {:credo, "~> 0.5", only: [:dev, :test]}
     ]
   end
 end
