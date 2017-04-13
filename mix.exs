@@ -26,6 +26,7 @@ defmodule Hub.Mixfile do
     [
       {:phoenix_pubsub, "~> 1.0"},
 
+      {:ex_doc, ">= 0.0.0", only: :dev},
       {:credo, "~> 0.5", only: [:dev, :test]},
       {:dialyxir, "~> 0.4", only: [:dev, :test]},
     ]
