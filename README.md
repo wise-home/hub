@@ -27,6 +27,10 @@ def deps do
 end
 ```
 
+## Status
+
+[![CircleCI](https://circleci.com/gh/vesta-merkur/hub.svg?style=svg)](https://circleci.com/gh/vesta-merkur/hub)
+
 ## How it works and what you should know.
 
 Hub utlizes `Tracker` and `PubSub` of phoenix_pubsub to provide a robust and simple pub-sub hub where processes can
