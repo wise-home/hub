@@ -119,3 +119,7 @@ Subscribe to all messages in a channel:
 ```elixir
 Hub.subscribe("My channel", _)
 ```
+
+## Contributing
+
+Tests are run with `mix test`. When submitting new code, make sure `mix credo` also passes.
