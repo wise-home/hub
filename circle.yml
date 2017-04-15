@@ -1,0 +1,27 @@
+machine:
+  environment:
+    PATH: "$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"
+
+dependencies:
+  cache_directories:
+    - _build
+    - deps
+    - ~/.asdf
+  pre:
+    - if ! asdf | grep version; then git clone https://github.com/asdf-vm/asdf.git ~/.asdf; fi
+    - if ! asdf plugin-list | grep erlang; then asdf plugin-add erlang https://github.com/asdf-vm/asdf-erlang.git; fi
+    - if ! asdf plugin-list | grep elixir; then asdf plugin-add elixir https://github.com/asdf-vm/asdf-elixir.git; fi
+    - echo "erlang 19.2" >> .tool-versions
+    - echo "elixir 1.4.1" >> .tool-versions
+    - erlang_version=$(awk '/erlang/ { print $2 }' .tool-versions) && asdf install erlang ${erlang_version}
+    - elixir_version=$(awk '/elixir/ { print $2 }' .tool-versions) && asdf install elixir ${elixir_version}
+    - MIX_ENV=test mix local.hex --force
+    - MIX_ENV=test mix local.rebar --force
+    - MIX_ENV=test mix deps.get
+    - MIX_ENV=test mix deps.compile
+    - MIX_ENV=test mix dialyzer
+test:
+  override:
+    - mix test
+    - MIX_ENV=test mix credo
+    #- MIX_ENV=test mix dialyzer --halt-exit-status
