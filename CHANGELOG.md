@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - 2017-04-18
+
+* Fix edge case pins
+
 ## 0.2.0 - 2017-04-18
 
 * Allow local variables to be pinned in pattern [#3](https://github.com/vesta-merkur/hub/pull/3)
