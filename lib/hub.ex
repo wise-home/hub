@@ -48,7 +48,10 @@ defmodule Hub do
   """
   defmacro subscribe(channel, pattern, options \\ []) do
     quote do
-      Hub.subscribe_quoted(unquote(channel), unquote(Macro.escape(pattern)), unquote(options))
+      {bind_quoted, options} = unquote(options) |> Keyword.pop(:bind_quoted, [])
+      quoted_pattern = unquote(Macro.escape(pattern)) |> Hub.replace_pins(bind_quoted)
+
+      Hub.subscribe_quoted(unquote(channel), quoted_pattern, options)
     end
   end
 
@@ -144,5 +147,28 @@ defmodule Hub do
 
   defp tracker_topic(channel) when is_binary(channel) do
     @tracker_topic_prefix <> channel
+  end
+
+  @doc false
+  def replace_pins({:^, _, [{name, _, _}]} = term, bindings) do
+    case Keyword.fetch(bindings, name) do
+      {:ok, value} -> value
+      :error -> term
+    end
+  end
+  def replace_pins({fun, con, args}, bindings) do
+    {fun, con, replace_pins(args, bindings)}
+  end
+  def replace_pins({term_1, term_2}, bindings) do
+    {
+      replace_pins(term_1, bindings),
+      replace_pins(term_2, bindings)
+    }
+  end
+  def replace_pins(list, bindings) when is_list(list) do
+    list |> Enum.map(&replace_pins(&1, bindings))
+  end
+  def replace_pins(term, _bindings) do
+    term
   end
 end
