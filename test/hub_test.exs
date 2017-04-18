@@ -142,4 +142,18 @@ defmodule HubTest do
 
     assert_received(^message)
   end
+
+  test "pin inside complex term" do
+    Hub.subscribe("channel", (fn x -> ^x end).(1), bind_quoted: [x: 5])
+    [subscriber] = Hub.subscribers("channel")
+
+    assert subscriber.pattern |> Macro.to_string == "(fn x -> 5 end).(1)"
+  end
+
+  test "pin function call should raise error" do
+    assert_raise CompileError, ~r/undefined function fun/, fn ->
+      Hub.subscribe("global", ^fun(var), bind_quoted: [fun: 42])
+      Hub.publish("global", "message")
+    end
+  end
 end
