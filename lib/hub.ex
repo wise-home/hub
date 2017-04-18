@@ -150,29 +150,29 @@ defmodule Hub do
   end
 
   @doc false
-  def replace_pins({:^, _, [{name, _, atom}]} = term, bindings) when is_atom(atom) do
+  def replace_pins(ast, _binding = []) do
+    ast
+  end
+  def replace_pins(ast, bindings) do
+    {ast, _acc} = Macro.traverse(
+      ast,
+      nil,
+      fn ast, _acc ->
+        ast = traverse_pin(ast, bindings)
+        {ast, nil}
+      end,
+      fn ast, _acc -> {ast, nil} end
+    )
+    ast
+  end
+
+  def traverse_pin({:^, _, [{name, _, atom}]} = term, bindings) when is_atom(atom) do
     case Keyword.fetch(bindings, name) do
       {:ok, value} -> Macro.escape(value)
       :error -> term
     end
   end
-  def replace_pins({fun, con, args}, bindings) do
-    {
-      replace_pins(fun, bindings),
-      con,
-      replace_pins(args, bindings)
-    }
-  end
-  def replace_pins({term_1, term_2}, bindings) do
-    {
-      replace_pins(term_1, bindings),
-      replace_pins(term_2, bindings)
-    }
-  end
-  def replace_pins(list, bindings) when is_list(list) do
-    list |> Enum.map(&replace_pins(&1, bindings))
-  end
-  def replace_pins(term, _bindings) do
-    term
+  def traverse_pin(ast, _bindings) do
+    ast
   end
 end
