@@ -132,4 +132,14 @@ defmodule HubTest do
 
     assert_received({:hello, "World"})
   end
+
+  test "local complex variable" do
+    map = %{foo: "bar"}
+
+    Hub.subscribe("global", %{map: ^map}, bind_quoted: [map: map])
+    message = %{map: %{foo: "bar"}, other: "key"}
+    Hub.publish("global", message)
+
+    assert_received(^message)
+  end
 end

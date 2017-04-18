@@ -152,7 +152,7 @@ defmodule Hub do
   @doc false
   def replace_pins({:^, _, [{name, _, _}]} = term, bindings) do
     case Keyword.fetch(bindings, name) do
-      {:ok, value} -> value
+      {:ok, value} -> Macro.escape(value)
       :error -> term
     end
   end
