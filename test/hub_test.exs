@@ -124,4 +124,12 @@ defmodule HubTest do
     result = Task.await(task)
     assert result == ~w(Me You)
   end
+
+  test "local variables parts of pattern" do
+    name = "World"
+    Hub.subscribe("global", {:hello, ^name}, bind_quoted: [name: name])
+    Hub.publish("global", {:hello, "World"})
+
+    assert_received({:hello, "World"})
+  end
 end

@@ -94,6 +94,24 @@ def handle_info({:hello, name}, state) do
 end
 ```
 
+### Using local variables
+
+Sometimes one wish to subscribe using a pattern involving local variables.
+The `subscribe` macro accepts a `bind_quoted` argument, that will replace pinned variables with the given values.
+
+E.g.
+
+```elixir
+size = 42
+Hub.subscribe("my channel", %{size: ^size}, bind_quoted: [size: size])
+```
+
+is equivalent to
+
+```elixir
+Hub.subscribe("my channel", %{size: 42})
+```
+
 ## Examples
 
 Subscribe only once to a message:
