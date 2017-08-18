@@ -150,7 +150,7 @@ defmodule Hub do
   end
 
   @doc false
-  def replace_pins(ast, _binding = []) do
+  def replace_pins(ast, [] = _binding) do
     ast
   end
   def replace_pins(ast, bindings) do
