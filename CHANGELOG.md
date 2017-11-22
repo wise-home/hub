@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 - 2017-11-22
+
+* Can subscribe to multiple patterns in one subscription
+
 ## 0.2.1 - 2017-04-18
 
 * Fix edge case pins
