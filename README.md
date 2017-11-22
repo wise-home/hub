@@ -97,8 +97,8 @@ end
 
 * `pid` (default `self()`) is the process that should receive published messages.
 * `count` (default `:infinity`) is how many times a subscription can be triggered before it is auto-unsubscribed.
-* `multi` (default `false`). When `true`, the `pattern` argument must be an array of multiple patterns that are all
-  subscribed to in the same subscription. This is handy if combined with `count`.
+* `multi` (default `false`). When `true`, the `pattern` argument must be a list of multiple patterns. This is handy if
+  combined with `count`.
 
 ### Using local variables
 
