@@ -156,4 +156,26 @@ defmodule HubTest do
       Hub.publish("global", "message")
     end
   end
+
+  test "subscribe with multiple patterns" do
+    Hub.subscribe("global", [{:hello, name}, {:goodbye, name}], multi: true)
+    Hub.publish("global", {:hello, "World"})
+    Hub.publish("global", {:goodbye, "World"})
+
+    assert_received({:hello, "World"})
+    assert_received({:goodbye, "World"})
+  end
+
+  test "subscribe with multiple patterns and count 1" do
+    Hub.subscribe("global", [{:hello, name}, {:goodbye, name}], multi: true, count: 1)
+    Hub.publish("global", {:hello, "World"})
+    Hub.publish("global", {:goodbye, "World"})
+    assert_received({:hello, "World"})
+    refute_received({:goodbye, "World"})
+  end
+
+  test "subscribe with multi, but quoted pattern is not an array" do
+    result = Hub.subscribe("global", :not_a_list, multi: true)
+    assert result == {:error, "Must subscribe with a list of patterns when using multi: true"}
+  end
 end
