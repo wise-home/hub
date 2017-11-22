@@ -13,7 +13,7 @@ defmodule Hub do
   alias Hub.Tracker
 
   @type subscribe_options :: [subscribe_option]
-  @type subscribe_option :: {:pid, pid} | {:count, count}
+  @type subscribe_option :: {:pid, pid} | {:count, count} | {:multi, boolean}
   @type count :: pos_integer | :infinity
   @type pattern :: any
   @type channel :: String.t
@@ -31,11 +31,12 @@ defmodule Hub do
       channel: nil,
       pid: nil,
       pattern: nil,
-      count: nil
+      count: nil,
+      multi: nil
     ]
 
-    def new(channel, pid, pattern, count) do
-      %__MODULE__{channel: channel, pid: pid, pattern: pattern, count: count}
+    def new(channel, pid, pattern, count, multi) do
+      %__MODULE__{channel: channel, pid: pid, pattern: pattern, count: count, multi: multi}
     end
   end
 
@@ -62,11 +63,21 @@ defmodule Hub do
 
     Hub.subscribe("global", quote do: %{count: count} when count > 42)
   """
-  @spec subscribe_quoted(channel, pattern, subscribe_options) :: :ok
+  @spec subscribe_quoted(channel, pattern, subscribe_options) :: :ok | {:error, reason :: String.t}
   def subscribe_quoted(channel, quoted_pattern, options \\ []) do
-    pid = options |> Keyword.get(:pid, self())
-    count = options |> Keyword.get(:count, :infinity)
-    subscriber = Subscriber.new(channel, pid, quoted_pattern, count)
+    map_options = options |> Enum.into(%{})
+    do_subscribe_quoted(channel, quoted_pattern, map_options)
+  end
+
+  defp do_subscribe_quoted(_channel, quoted_pattern, %{multi: true}) when not is_list(quoted_pattern) do
+    {:error, "Must subscribe with a list of patterns when using multi: true"}
+  end
+  defp do_subscribe_quoted(channel, quoted_pattern, options) do
+    pid = options |> Map.get(:pid, self())
+    count = options |> Map.get(:count, :infinity)
+    multi = options |> Map.get(:multi, :false)
+
+    subscriber = Subscriber.new(channel, pid, quoted_pattern, count, multi)
 
     topic = tracker_topic(channel)
     key = presence_key(subscriber)
@@ -107,6 +118,10 @@ defmodule Hub do
     |> Enum.map(fn {_key, %{subscriber: subscriber}} -> subscriber end)
   end
 
+  defp publish_to_subscriber?(term, %{multi: true} = subscriber) do
+    subscriber.pattern
+    |> Enum.any?(&pattern_match?(&1, term))
+  end
   defp publish_to_subscriber?(term, subscriber) do
     pattern_match?(subscriber.pattern, term)
   end
@@ -127,8 +142,8 @@ defmodule Hub do
     Tracker.update(pid, tracker_topic(channel), presence_key(subscriber), %{subscriber: subscriber})
   end
 
-  defp presence_key(%{pid: pid, pattern: pattern}) do
-    {pid, pattern} |> inspect
+  defp presence_key(%{pid: pid, pattern: pattern, multi: multi}) do
+    {pid, pattern, multi} |> inspect
   end
 
   defp pattern_match?(pattern, term) do
