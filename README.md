@@ -52,11 +52,8 @@ possible.
 A subscription is made with a quoted pattern:
 
 ```elixir
-Hub.subscribe_quoted("My channel", quote(do: {:some, pattern}), pid: self(), count: :infinity)
+Hub.subscribe_quoted("My channel", quote(do: {:some, pattern}))
 ```
-
-* The `pid` is the process that should receive published messages. Default is `self()`.
-* The `count` is how many times a subscription can be triggered before it is auto-unsubscribed. Default is `:infinity`.
 
 A convenience macro, `subscribe`, can be used to avoid the `quote`. Given the default value of the options, the
 following is equivalent to the above:
@@ -93,6 +90,15 @@ def handle_info({:hello, name}, state) do
   {:noreply, state}
 end
 ```
+
+### Subscribe options
+
+`subscribe` and `subscribe_quoted` accepts these options:
+
+* `pid` (default `self()`) is the process that should receive published messages.
+* `count` (default `:infinity`) is how many times a subscription can be triggered before it is auto-unsubscribed.
+* `multi` (default `false`). When `true`, the `pattern` argument must be an array of multiple patterns that are all
+  subscribed to in the same subscription. This is handy if combined with `count`.
 
 ### Using local variables
 
@@ -136,6 +142,12 @@ Subscribe to all messages in a channel:
 
 ```elixir
 Hub.subscribe("My channel", _)
+```
+
+Subscribe to the first message that matches one of the patterns:
+
+```elixir
+Hub.subscribe("My channel", [{:hello, name}, {:goodbye, name}], multi: true, count: 1)
 ```
 
 ## Contributing
