@@ -68,16 +68,16 @@ defmodule HubTest do
     assert_received({:hello, "World"})
   end
 
-  test "handle duplicate keys" do
+  test "can subscribe to same event multiple times" do
     pattern = quote do: {:hello, name}
     Hub.subscribe_quoted("global", pattern)
     Hub.subscribe_quoted("global", pattern)
     Hub.publish("global", {:hello, "World"})
 
     assert_received({:hello, "World"})
-    refute_received({:hello, "World"})
+    assert_received({:hello, "World"})
 
-    assert Hub.subscribers("global") |> length == 1
+    assert Hub.subscribers("global") |> length == 2
   end
 
   test "does not send to wrong channel" do

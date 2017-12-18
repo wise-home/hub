@@ -32,11 +32,20 @@ defmodule Hub do
       pid: nil,
       pattern: nil,
       count: nil,
-      multi: nil
+      multi: nil,
+      ref: nil
     ]
 
     def new(channel, pid, pattern, count, multi) do
-      %__MODULE__{channel: channel, pid: pid, pattern: pattern, count: count, multi: multi}
+      ref = make_ref()
+      %__MODULE__{
+        channel: channel,
+        pid: pid,
+        pattern: pattern,
+        count: count,
+        multi: multi,
+        ref: ref
+      }
     end
   end
 
@@ -79,19 +88,7 @@ defmodule Hub do
 
     subscriber = Subscriber.new(channel, pid, quoted_pattern, count, multi)
 
-    topic = tracker_topic(channel)
-    key = presence_key(subscriber)
-    meta = %{subscriber: subscriber}
-
-    pid
-    |> Tracker.track(topic, key, meta)
-    |> case do
-      {:ok, _} ->
-        :ok
-      {:error, {:already_tracked, ^pid, ^topic, ^key}} ->
-        {:ok, _} = Tracker.update(pid, topic, key, meta)
-        :ok
-    end
+    {:ok, _} = Tracker.track(pid, tracker_topic(channel), subscriber.ref, %{subscriber: subscriber})
   end
 
   @doc """
@@ -135,15 +132,11 @@ defmodule Hub do
     :ok
   end
   defp update_subscriber(%{count: 1, pid: pid, channel: channel} = subscriber) do
-    Tracker.untrack(pid, tracker_topic(channel), presence_key(subscriber))
+    Tracker.untrack(pid, tracker_topic(channel), subscriber.ref)
   end
   defp update_subscriber(%{count: count, pid: pid, channel: channel} = subscriber) when count > 1 do
     subscriber = %{subscriber | count: count - 1}
-    Tracker.update(pid, tracker_topic(channel), presence_key(subscriber), %{subscriber: subscriber})
-  end
-
-  defp presence_key(%{pid: pid, pattern: pattern, multi: multi}) do
-    {pid, pattern, multi} |> inspect
+    Tracker.update(pid, tracker_topic(channel), subscriber.ref, %{subscriber: subscriber})
   end
 
   defp pattern_match?(pattern, term) do
