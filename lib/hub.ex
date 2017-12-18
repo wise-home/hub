@@ -19,6 +19,7 @@ defmodule Hub do
   @type channel :: String.t
 
   @tracker_topic_prefix "Hub.subscribers."
+  @subscription_topic "Hub.subscriptions"
 
   defmodule Subscriber do
     @moduledoc """
@@ -72,7 +73,7 @@ defmodule Hub do
 
     Hub.subscribe("global", quote do: %{count: count} when count > 42)
   """
-  @spec subscribe_quoted(channel, pattern, subscribe_options) :: :ok | {:error, reason :: String.t}
+  @spec subscribe_quoted(channel, pattern, subscribe_options) :: {:ok, reference} | {:error, reason :: String.t}
   def subscribe_quoted(channel, quoted_pattern, options \\ []) do
     map_options = options |> Enum.into(%{})
     do_subscribe_quoted(channel, quoted_pattern, map_options)
@@ -89,6 +90,26 @@ defmodule Hub do
     subscriber = Subscriber.new(channel, pid, quoted_pattern, count, multi)
 
     {:ok, _} = Tracker.track(pid, tracker_topic(channel), subscriber.ref, %{subscriber: subscriber})
+    {:ok, _} = Tracker.track(pid, @subscription_topic, subscriber.ref, %{subscriber: subscriber})
+    {:ok, subscriber.ref}
+  end
+
+  @doc """
+  Unsubscribes using the reference returned on subscribe
+  """
+  @spec unsubscribe(reference) :: :ok
+  def unsubscribe(ref) do
+    @subscription_topic
+    |> Tracker.list
+    |> Enum.find(&match?({^ref, _}, &1))
+    |> case do
+      nil ->
+        :ok
+      {^ref, %{subscriber: subscriber}} ->
+        :ok = Tracker.untrack(subscriber.pid, tracker_topic(subscriber.channel), ref)
+        :ok = Tracker.untrack(subscriber.pid, @subscription_topic, ref)
+        :ok
+    end
   end
 
   @doc """
@@ -131,8 +152,8 @@ defmodule Hub do
   defp update_subscriber(%{count: :infinity}) do
     :ok
   end
-  defp update_subscriber(%{count: 1, pid: pid, channel: channel} = subscriber) do
-    Tracker.untrack(pid, tracker_topic(channel), subscriber.ref)
+  defp update_subscriber(%{count: 1, ref: ref}) do
+    unsubscribe(ref)
   end
   defp update_subscriber(%{count: count, pid: pid, channel: channel} = subscriber) when count > 1 do
     subscriber = %{subscriber | count: count - 1}

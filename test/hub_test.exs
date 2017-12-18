@@ -178,4 +178,19 @@ defmodule HubTest do
     result = Hub.subscribe("global", :not_a_list, multi: true)
     assert result == {:error, "Must subscribe with a list of patterns when using multi: true"}
   end
+
+  test "subscribe, then unsubscribe" do
+    {:ok, ref} = Hub.subscribe("global", {:hello, name})
+    :ok = Hub.unsubscribe(ref)
+
+    Hub.publish("global", {:hello, "World"})
+
+    refute_received({:hello, "World"})
+    assert Hub.subscribers("global") == []
+  end
+
+  test "unsubscribe with unknown ref" do
+    invalid_ref = make_ref()
+    :ok = Hub.unsubscribe(invalid_ref)
+  end
 end
