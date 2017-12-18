@@ -68,16 +68,16 @@ defmodule HubTest do
     assert_received({:hello, "World"})
   end
 
-  test "handle duplicate keys" do
+  test "can subscribe to same event multiple times" do
     pattern = quote do: {:hello, name}
     Hub.subscribe_quoted("global", pattern)
     Hub.subscribe_quoted("global", pattern)
     Hub.publish("global", {:hello, "World"})
 
     assert_received({:hello, "World"})
-    refute_received({:hello, "World"})
+    assert_received({:hello, "World"})
 
-    assert Hub.subscribers("global") |> length == 1
+    assert Hub.subscribers("global") |> length == 2
   end
 
   test "does not send to wrong channel" do
@@ -177,5 +177,20 @@ defmodule HubTest do
   test "subscribe with multi, but quoted pattern is not an array" do
     result = Hub.subscribe("global", :not_a_list, multi: true)
     assert result == {:error, "Must subscribe with a list of patterns when using multi: true"}
+  end
+
+  test "subscribe, then unsubscribe" do
+    {:ok, ref} = Hub.subscribe("global", {:hello, name})
+    :ok = Hub.unsubscribe(ref)
+
+    Hub.publish("global", {:hello, "World"})
+
+    refute_received({:hello, "World"})
+    assert Hub.subscribers("global") == []
+  end
+
+  test "unsubscribe with unknown ref" do
+    invalid_ref = make_ref()
+    :ok = Hub.unsubscribe(invalid_ref)
   end
 end

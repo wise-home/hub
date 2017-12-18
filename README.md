@@ -23,7 +23,7 @@ Add `hub` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:hub, "~> 0.3"}]
+  [{:hub, "~> 0.4"}]
 end
 ```
 
@@ -116,6 +116,15 @@ is equivalent to
 
 ```elixir
 Hub.subscribe("my channel", %{size: 42})
+```
+
+### Unsubscribe
+
+To unsubscribe, use the returned reference given when subscribing:
+
+```elixir
+{:ok, subscription} = Hub.subscribe("my cchannel", {:hello, name})
+Hub.unsubscribe(subscription)
 ```
 
 ## Examples
