@@ -19,9 +19,11 @@ dependencies:
     - MIX_ENV=test mix local.rebar --force
     - MIX_ENV=test mix deps.get
     - MIX_ENV=test mix deps.compile
-    - MIX_ENV=test mix dialyzer
+    - MIX_ENV=test mix dialyzer:
+      timeout: 1800
 test:
   override:
     - mix test
     - MIX_ENV=test mix credo
-    #- MIX_ENV=test mix dialyzer --halt-exit-status
+    - MIX_ENV=test mix dialyzer --halt-exit-status:
+      timeout: 1800
