@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 - 2017-12-18
+
+* Can unsubscribe ([#8](https://github.com/vesta-merkur/hub/pull/8))
+
+Breaking changes:
+
+* Hub.subscribe/3 and Hub.subscribe_quoted/3 now returns {:ok, reference} instead of :ok
+* Attempting to subscribe with the same pattern again from the same pid on the same channel will now make two
+  subscriptions. Before, the old one would be updated.
+
 ## 0.3.0 - 2017-11-22
 
 * Can subscribe to multiple patterns in one subscription ([#6](https://github.com/vesta-merkur/hub/pull/6))
