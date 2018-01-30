@@ -16,7 +16,7 @@ defmodule Hub do
   @type subscribe_option :: {:pid, pid} | {:count, count} | {:multi, boolean}
   @type count :: pos_integer | :infinity
   @type pattern :: any
-  @type channel :: String.t
+  @type channel :: String.t()
 
   @tracker_topic_prefix "Hub.subscribers."
   @subscription_topic "Hub.subscriptions"
@@ -28,17 +28,16 @@ defmodule Hub do
 
     @type t :: %__MODULE__{}
 
-    defstruct [
-      channel: nil,
-      pid: nil,
-      pattern: nil,
-      count: nil,
-      multi: nil,
-      ref: nil
-    ]
+    defstruct channel: nil,
+              pid: nil,
+              pattern: nil,
+              count: nil,
+              multi: nil,
+              ref: nil
 
     def new(channel, pid, pattern, count, multi) do
       ref = make_ref()
+
       %__MODULE__{
         channel: channel,
         pid: pid,
@@ -73,7 +72,7 @@ defmodule Hub do
 
     Hub.subscribe("global", quote do: %{count: count} when count > 42)
   """
-  @spec subscribe_quoted(channel, pattern, subscribe_options) :: {:ok, reference} | {:error, reason :: String.t}
+  @spec subscribe_quoted(channel, pattern, subscribe_options) :: {:ok, reference} | {:error, reason :: String.t()}
   def subscribe_quoted(channel, quoted_pattern, options \\ []) do
     map_options = options |> Enum.into(%{})
     do_subscribe_quoted(channel, quoted_pattern, map_options)
@@ -82,10 +81,11 @@ defmodule Hub do
   defp do_subscribe_quoted(_channel, quoted_pattern, %{multi: true}) when not is_list(quoted_pattern) do
     {:error, "Must subscribe with a list of patterns when using multi: true"}
   end
+
   defp do_subscribe_quoted(channel, quoted_pattern, options) do
     pid = options |> Map.get(:pid, self())
     count = options |> Map.get(:count, :infinity)
-    multi = options |> Map.get(:multi, :false)
+    multi = options |> Map.get(:multi, false)
 
     subscriber = Subscriber.new(channel, pid, quoted_pattern, count, multi)
 
@@ -100,11 +100,12 @@ defmodule Hub do
   @spec unsubscribe(reference) :: :ok
   def unsubscribe(ref) do
     @subscription_topic
-    |> Tracker.list
+    |> Tracker.list()
     |> Enum.find(&match?({^ref, _}, &1))
     |> case do
       nil ->
         :ok
+
       {^ref, %{subscriber: subscriber}} ->
         :ok = Tracker.untrack(subscriber.pid, tracker_topic(subscriber.channel), ref)
         :ok = Tracker.untrack(subscriber.pid, @subscription_topic, ref)
@@ -128,11 +129,11 @@ defmodule Hub do
   @doc """
   Gets a list of all subscribers to a channel
   """
-  @spec subscribers(channel) :: [Subscriber.t]
+  @spec subscribers(channel) :: [Subscriber.t()]
   def subscribers(channel) do
     channel
     |> tracker_topic
-    |> Tracker.list
+    |> Tracker.list()
     |> Enum.map(fn {_key, %{subscriber: subscriber}} -> subscriber end)
   end
 
@@ -140,6 +141,7 @@ defmodule Hub do
     subscriber.pattern
     |> Enum.any?(&pattern_match?(&1, term))
   end
+
   defp publish_to_subscriber?(term, subscriber) do
     pattern_match?(subscriber.pattern, term)
   end
@@ -152,9 +154,11 @@ defmodule Hub do
   defp update_subscriber(%{count: :infinity}) do
     :ok
   end
+
   defp update_subscriber(%{count: 1, ref: ref}) do
     unsubscribe(ref)
   end
+
   defp update_subscriber(%{count: count, pid: pid, channel: channel} = subscriber) when count > 1 do
     subscriber = %{subscriber | count: count - 1}
     Tracker.update(pid, tracker_topic(channel), subscriber.ref, %{subscriber: subscriber})
@@ -163,12 +167,13 @@ defmodule Hub do
   defp pattern_match?(pattern, term) do
     quoted_term = Macro.escape(term)
 
-    ast = quote do
-      case unquote(quoted_term) do
-        unquote(pattern) -> true
-        _ -> false
+    ast =
+      quote do
+        case unquote(quoted_term) do
+          unquote(pattern) -> true
+          _ -> false
+        end
       end
-    end
 
     {result, _} = Code.eval_quoted(ast)
     result
@@ -182,16 +187,19 @@ defmodule Hub do
   def replace_pins(ast, [] = _binding) do
     ast
   end
+
   def replace_pins(ast, bindings) do
-    {ast, _acc} = Macro.traverse(
-      ast,
-      nil,
-      fn ast, _acc ->
-        ast = traverse_pin(ast, bindings)
-        {ast, nil}
-      end,
-      fn ast, _acc -> {ast, nil} end
-    )
+    {ast, _acc} =
+      Macro.traverse(
+        ast,
+        nil,
+        fn ast, _acc ->
+          ast = traverse_pin(ast, bindings)
+          {ast, nil}
+        end,
+        fn ast, _acc -> {ast, nil} end
+      )
+
     ast
   end
 
@@ -201,6 +209,7 @@ defmodule Hub do
       :error -> term
     end
   end
+
   def traverse_pin(ast, _bindings) do
     ast
   end

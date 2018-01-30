@@ -4,7 +4,7 @@ defmodule HubTest do
   require Hub
 
   test "subscribe and publish in same process" do
-    Hub.subscribe_quoted("global", quote do: {:hello, name})
+    Hub.subscribe_quoted("global", quote(do: {:hello, name}))
     Hub.publish("global", {:hello, "World"})
     Hub.publish("global", {:goodbye, "World"})
 
@@ -15,11 +15,13 @@ defmodule HubTest do
   test "subscribe and publish in different processes" do
     me = self()
 
-    child = spawn_link(fn ->
-      receive do
-        {:hello, name} -> send(me, {:received, name})
-      end
-    end)
+    child =
+      spawn_link(fn ->
+        receive do
+          {:hello, name} -> send(me, {:received, name})
+        end
+      end)
+
     Hub.subscribe_quoted("global", quote(do: {:hello, name}), pid: child)
 
     Hub.publish("global", {:hello, "World"})
@@ -46,11 +48,13 @@ defmodule HubTest do
   test "auto unsubscribe dead processes" do
     me = self()
 
-    child = spawn(fn ->
-      receive do
-        {:hello, name} -> send(me, {:received, name})
-      end
-    end)
+    child =
+      spawn(fn ->
+        receive do
+          {:hello, name} -> send(me, {:received, name})
+        end
+      end)
+
     Hub.subscribe("global", {:hello, name}, pid: child)
     Process.exit(child, :kill)
 
@@ -97,28 +101,35 @@ defmodule HubTest do
 
   test "subscribe and publish multiple times from same process" do
     me = self()
-    task = Task.async(fn ->
-      Hub.subscribe("global", {:hello, name}, count: 1)
-      send(me, :subscribed)
-      result = receive do
-        {:hello, name} -> [name]
-      end
 
-      Hub.subscribe("global", {:hello, name}, count: 1)
-      send(me, :subscribed)
-      receive do
-        {:hello, name} -> [name | result]
-      end
-    end)
+    task =
+      Task.async(fn ->
+        Hub.subscribe("global", {:hello, name}, count: 1)
+        send(me, :subscribed)
+
+        result =
+          receive do
+            {:hello, name} -> [name]
+          end
+
+        Hub.subscribe("global", {:hello, name}, count: 1)
+        send(me, :subscribed)
+
+        receive do
+          {:hello, name} -> [name | result]
+        end
+      end)
 
     receive do
       :subscribed -> :ok
     end
+
     assert Hub.publish("global", {:hello, "You"}) == 1
 
     receive do
       :subscribed -> :ok
     end
+
     assert Hub.publish("global", {:hello, "Me"}) == 1
 
     result = Task.await(task)
@@ -147,7 +158,7 @@ defmodule HubTest do
     Hub.subscribe("channel", (fn x -> ^x end).(1), bind_quoted: [x: 5])
     [subscriber] = Hub.subscribers("channel")
 
-    assert subscriber.pattern |> Macro.to_string == "(fn x -> 5 end).(1)"
+    assert subscriber.pattern |> Macro.to_string() == "(fn x -> 5 end).(1)"
   end
 
   test "pin function call should raise error" do
