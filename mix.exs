@@ -42,9 +42,9 @@ defmodule Hub.Mixfile do
   defp package do
     [
       licenses: ["MIT"],
-      maintainers: ["Vesta Merkur", "Lasse Ebert"],
+      maintainers: ["Wise Home", "Lasse Ebert"],
       links: %{
-        github: "https://github.com/vesta-merkur/hub",
+        github: "https://github.com/wise-home/hub",
         docs: "https://hexdocs.pm/hub/"
       }
     ]

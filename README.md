@@ -29,7 +29,7 @@ end
 
 ## Status
 
-[![CircleCI](https://circleci.com/gh/vesta-merkur/hub.svg?style=svg)](https://circleci.com/gh/vesta-merkur/hub)
+[![CircleCI](https://circleci.com/gh/wise-home/hub.svg?style=svg)](https://circleci.com/gh/wise-home/hub)
 
 ## How it works and what you should know.
 

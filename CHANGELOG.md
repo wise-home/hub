@@ -2,7 +2,7 @@
 
 ## 0.4.0 - 2017-12-18
 
-* Can unsubscribe ([#8](https://github.com/vesta-merkur/hub/pull/8))
+* Can unsubscribe ([#8](https://github.com/wise-home/hub/pull/8))
 
 Breaking changes:
 
@@ -12,7 +12,7 @@ Breaking changes:
 
 ## 0.3.0 - 2017-11-22
 
-* Can subscribe to multiple patterns in one subscription ([#6](https://github.com/vesta-merkur/hub/pull/6))
+* Can subscribe to multiple patterns in one subscription ([#6](https://github.com/wise-home/hub/pull/6))
 
 ## 0.2.1 - 2017-04-18
 
@@ -20,7 +20,7 @@ Breaking changes:
 
 ## 0.2.0 - 2017-04-18
 
-* Allow local variables to be pinned in pattern ([#3](https://github.com/vesta-merkur/hub/pull/3))
+* Allow local variables to be pinned in pattern ([#3](https://github.com/wise-home/hub/pull/3))
 
 ## 0.1.0 - 2017-04-14
 
