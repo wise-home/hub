@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1 - 2018-02-05
+
+* Moved organization on Github, https://github.com/vesta-merkur/hub -> https://github.com/wise-home/hub
+
+
 ## 0.4.0 - 2017-12-18
 
 * Can unsubscribe ([#8](https://github.com/wise-home/hub/pull/8))
