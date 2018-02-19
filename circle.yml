@@ -26,3 +26,4 @@ test:
     - MIX_ENV=test mix credo
     - MIX_ENV=test mix dialyzer --halt-exit-status:
         timeout: 1800
+    - MIX_ENV=test mix format --check-formatted
