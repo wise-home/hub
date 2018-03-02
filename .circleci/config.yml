@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  build:
+    parallelism: 1
+    docker:
+      - image: circleci/elixir:1.6.1
+        environment:
+          MIX_ENV: test
+
+    working_directory: ~/app
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - cache-{{ .Branch }}
+            - cache-master
+
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+
+      - run: mix deps.get
+      - run: mix deps.compile
+      - run: mix compile
+      - run: mix dialyzer --plt --no-compile
+
+      - save_cache:
+          key: cache-{{ .Branch }}-{{ .BuildNum }}
+          paths:
+            - _build
+            - deps
+
+      - run: mix test
+      - run: mix credo
+      - run: mix dialyzer --halt-exit-status --no-check --no-compile
+      - run: mix format --check-formatted
