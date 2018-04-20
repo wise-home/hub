@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0 - 2018-04-20
+
+* Runs every channel in its own process to avoid race condition
+
 ## 0.4.1 - 2018-02-05
 
 * Moved organization on Github, https://github.com/vesta-merkur/hub -> https://github.com/wise-home/hub
