@@ -5,18 +5,20 @@ defmodule Hub.Subscriber do
 
   @type t :: %__MODULE__{}
 
-  defstruct channel: nil,
-            pid: nil,
-            pattern: nil,
-            count: nil,
-            multi: nil,
-            ref: nil
+  defstruct [
+    :channel_name,
+    :pid,
+    :pattern,
+    :count,
+    :multi,
+    :ref
+  ]
 
-  def new(channel, pid, pattern, count, multi) do
+  def new(channel_name, pid, pattern, count, multi) do
     ref = make_ref()
 
     %__MODULE__{
-      channel: channel,
+      channel_name: channel_name,
       pid: pid,
       pattern: pattern,
       count: count,

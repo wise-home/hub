@@ -17,7 +17,7 @@ defmodule Hub do
   @type subscribe_option :: {:pid, pid} | {:count, count} | {:multi, boolean}
   @type count :: pos_integer | :infinity
   @type pattern :: any
-  @type channel :: String.t()
+  @type channel_name :: String.t()
 
   @tracker_topic_prefix "Hub.subscribers."
   @subscription_topic "Hub.subscriptions"
@@ -29,40 +29,40 @@ defmodule Hub do
 
     Hub.subscribe("global", %{count: count} when count > 42)
   """
-  defmacro subscribe(channel, pattern, options \\ []) do
+  defmacro subscribe(channel_name, pattern, options \\ []) do
     quote do
       {bind_quoted, options} = unquote(options) |> Keyword.pop(:bind_quoted, [])
       quoted_pattern = unquote(Macro.escape(pattern)) |> Hub.replace_pins(bind_quoted)
 
-      Hub.subscribe_quoted(unquote(channel), quoted_pattern, options)
+      Hub.subscribe_quoted(unquote(channel_name), quoted_pattern, options)
     end
   end
 
   @doc """
-  Subscribes to the quoted pattern in the given channel
+  Subscribes to the quoted pattern in the given channel_name
 
   example:
 
     Hub.subscribe("global", quote do: %{count: count} when count > 42)
   """
-  @spec subscribe_quoted(channel, pattern, subscribe_options) :: {:ok, reference} | {:error, reason :: String.t()}
-  def subscribe_quoted(channel, quoted_pattern, options \\ []) do
+  @spec subscribe_quoted(channel_name, pattern, subscribe_options) :: {:ok, reference} | {:error, reason :: String.t()}
+  def subscribe_quoted(channel_name, quoted_pattern, options \\ []) do
     map_options = options |> Enum.into(%{})
-    do_subscribe_quoted(channel, quoted_pattern, map_options)
+    do_subscribe_quoted(channel_name, quoted_pattern, map_options)
   end
 
   defp do_subscribe_quoted(_channel, quoted_pattern, %{multi: true}) when not is_list(quoted_pattern) do
     {:error, "Must subscribe with a list of patterns when using multi: true"}
   end
 
-  defp do_subscribe_quoted(channel, quoted_pattern, options) do
+  defp do_subscribe_quoted(channel_name, quoted_pattern, options) do
     pid = options |> Map.get(:pid, self())
     count = options |> Map.get(:count, :infinity)
     multi = options |> Map.get(:multi, false)
 
-    subscriber = Subscriber.new(channel, pid, quoted_pattern, count, multi)
+    subscriber = Subscriber.new(channel_name, pid, quoted_pattern, count, multi)
 
-    {:ok, _} = Tracker.track(pid, tracker_topic(channel), subscriber.ref, %{subscriber: subscriber})
+    {:ok, _} = Tracker.track(pid, tracker_topic(channel_name), subscriber.ref, %{subscriber: subscriber})
     {:ok, _} = Tracker.track(pid, @subscription_topic, subscriber.ref, %{subscriber: subscriber})
     {:ok, subscriber.ref}
   end
@@ -80,7 +80,7 @@ defmodule Hub do
         :ok
 
       {^ref, %{subscriber: subscriber}} ->
-        :ok = Tracker.untrack(subscriber.pid, tracker_topic(subscriber.channel), ref)
+        :ok = Tracker.untrack(subscriber.pid, tracker_topic(subscriber.channel_name), ref)
         :ok = Tracker.untrack(subscriber.pid, @subscription_topic, ref)
         :ok
     end
@@ -90,9 +90,9 @@ defmodule Hub do
   Publishes the term to all subscribers that matches it
   Returns the number of subscribers that got the message
   """
-  @spec publish(channel, any) :: non_neg_integer
-  def publish(channel, term) do
-    channel
+  @spec publish(channel_name, any) :: non_neg_integer
+  def publish(channel_name, term) do
+    channel_name
     |> subscribers
     |> Enum.filter(&publish_to_subscriber?(term, &1))
     |> Enum.map(&publish_to_subscriber(term, &1))
@@ -100,11 +100,11 @@ defmodule Hub do
   end
 
   @doc """
-  Gets a list of all subscribers to a channel
+  Gets a list of all subscribers to a channel_name
   """
-  @spec subscribers(channel) :: [Subscriber.t()]
-  def subscribers(channel) do
-    channel
+  @spec subscribers(channel_name) :: [Subscriber.t()]
+  def subscribers(channel_name) do
+    channel_name
     |> tracker_topic
     |> Tracker.list()
     |> Enum.map(fn {_key, %{subscriber: subscriber}} -> subscriber end)
@@ -132,9 +132,9 @@ defmodule Hub do
     unsubscribe(ref)
   end
 
-  defp update_subscriber(%{count: count, pid: pid, channel: channel} = subscriber) when count > 1 do
+  defp update_subscriber(%{count: count, pid: pid, channel_name: channel_name} = subscriber) when count > 1 do
     subscriber = %{subscriber | count: count - 1}
-    Tracker.update(pid, tracker_topic(channel), subscriber.ref, %{subscriber: subscriber})
+    Tracker.update(pid, tracker_topic(channel_name), subscriber.ref, %{subscriber: subscriber})
   end
 
   defp pattern_match?(pattern, term) do
@@ -152,8 +152,8 @@ defmodule Hub do
     result
   end
 
-  defp tracker_topic(channel) when is_binary(channel) do
-    @tracker_topic_prefix <> channel
+  defp tracker_topic(channel_name) when is_binary(channel_name) do
+    @tracker_topic_prefix <> channel_name
   end
 
   @doc false
