@@ -8,8 +8,8 @@ defmodule HubTest do
     Hub.publish("global", {:hello, "World"})
     Hub.publish("global", {:goodbye, "World"})
 
-    assert_received({:hello, "World"})
-    refute_received({:goodbye, "World"})
+    assert_receive({:hello, "World"})
+    refute_receive({:goodbye, "World"})
   end
 
   test "subscribe and publish in different processes" do
@@ -32,7 +32,7 @@ defmodule HubTest do
     Hub.subscribe("global", {:hello, name})
     Hub.publish("global", {:hello, "World"})
 
-    assert_received({:hello, "World"})
+    assert_receive({:hello, "World"})
   end
 
   test "subscribe once" do
@@ -40,8 +40,8 @@ defmodule HubTest do
     Hub.publish("global", {:hello, "World"})
     Hub.publish("global", {:hello, "You"})
 
-    assert_received({:hello, "World"})
-    refute_received({:hello, "You"})
+    assert_receive({:hello, "World"})
+    refute_receive({:hello, "You"})
     assert Hub.subscribers("global") == []
   end
 
@@ -59,7 +59,7 @@ defmodule HubTest do
     Process.exit(child, :kill)
 
     Hub.publish("global", {:hello, "World"})
-    refute_received({:received, "World"})
+    refute_receive({:received, "World"})
     assert Hub.subscribers("global") == []
   end
 
@@ -68,8 +68,8 @@ defmodule HubTest do
     Hub.subscribe("global", {:hello, name_2})
     Hub.publish("global", {:hello, "World"})
 
-    assert_received({:hello, "World"})
-    assert_received({:hello, "World"})
+    assert_receive({:hello, "World"})
+    assert_receive({:hello, "World"})
   end
 
   test "can subscribe to same event multiple times" do
@@ -78,8 +78,8 @@ defmodule HubTest do
     Hub.subscribe_quoted("global", pattern)
     Hub.publish("global", {:hello, "World"})
 
-    assert_received({:hello, "World"})
-    assert_received({:hello, "World"})
+    assert_receive({:hello, "World"})
+    assert_receive({:hello, "World"})
 
     assert Hub.subscribers("global") |> length == 2
   end
@@ -88,7 +88,7 @@ defmodule HubTest do
     Hub.subscribe("1234", {:hello, name})
     Hub.publish("global", {:hello, "World"})
 
-    refute_received({:hello, "World"})
+    refute_receive({:hello, "World"})
   end
 
   test "publish returns the number of receivers" do
@@ -141,7 +141,7 @@ defmodule HubTest do
     Hub.subscribe("global", {:hello, ^name}, bind_quoted: [name: name])
     Hub.publish("global", {:hello, "World"})
 
-    assert_received({:hello, "World"})
+    assert_receive({:hello, "World"})
   end
 
   test "local complex variable" do
@@ -151,14 +151,7 @@ defmodule HubTest do
     message = %{map: %{foo: "bar"}, other: "key"}
     Hub.publish("global", message)
 
-    assert_received(^message)
-  end
-
-  test "pin inside complex term" do
-    Hub.subscribe("channel", (fn x -> ^x end).(1), bind_quoted: [x: 5])
-    [subscriber] = Hub.subscribers("channel")
-
-    assert subscriber.pattern |> Macro.to_string() == "(fn x -> 5 end).(1)"
+    assert_receive(^message)
   end
 
   test "pin function call should raise error" do
@@ -173,16 +166,16 @@ defmodule HubTest do
     Hub.publish("global", {:hello, "World"})
     Hub.publish("global", {:goodbye, "World"})
 
-    assert_received({:hello, "World"})
-    assert_received({:goodbye, "World"})
+    assert_receive({:hello, "World"})
+    assert_receive({:goodbye, "World"})
   end
 
   test "subscribe with multiple patterns and count 1" do
     Hub.subscribe("global", [{:hello, name}, {:goodbye, name}], multi: true, count: 1)
     Hub.publish("global", {:hello, "World"})
     Hub.publish("global", {:goodbye, "World"})
-    assert_received({:hello, "World"})
-    refute_received({:goodbye, "World"})
+    assert_receive({:hello, "World"})
+    refute_receive({:goodbye, "World"})
   end
 
   test "subscribe with multi, but quoted pattern is not an array" do
@@ -196,12 +189,22 @@ defmodule HubTest do
 
     Hub.publish("global", {:hello, "World"})
 
-    refute_received({:hello, "World"})
+    refute_receive({:hello, "World"})
     assert Hub.subscribers("global") == []
   end
 
   test "unsubscribe with unknown ref" do
     invalid_ref = make_ref()
     :ok = Hub.unsubscribe(invalid_ref)
+  end
+
+  test "race condition on publish and auto-unsubscribe" do
+    Hub.subscribe("global", {:hello, name}, count: 1)
+
+    spawn(fn -> Hub.publish("global", {:hello, "World"}) end)
+    spawn(fn -> Hub.publish("global", {:hello, "World"}) end)
+
+    assert_receive({:hello, "World"})
+    refute_receive({:hello, "World"})
   end
 end
