@@ -26,6 +26,8 @@ defmodule Hub.ChannelSupervisor do
   @doc """
   Starts a Channel worker with the given channel name
   """
+  # Replace with DynamicSupervisor.on_start_child when this PR is merged and released:
+  # https://github.com/elixir-lang/elixir/pull/7590
   @spec start_child(String.t()) :: Supervisor.on_start_child()
   def start_child(channel_name) do
     DynamicSupervisor.start_child(@name, {Channel, channel_name})
