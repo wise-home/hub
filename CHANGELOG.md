@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1 - 2018-04-24
+
+* Fixed race condition if two processes try to start the same channel at the same time by calling subscribe.
+
 ## 0.6.0 - 2018-04-24
 
 * Now has no external dependencies. Removed Phoenix PubSub in favor of in-process state in `Channel`.
