@@ -1,6 +1,8 @@
 defmodule HubTest do
   use ExUnit.Case
 
+  alias Hub.ChannelSupervisor
+
   require Hub
 
   test "subscribe and publish in same process" do
@@ -94,9 +96,7 @@ defmodule HubTest do
   test "publish returns the number of receivers" do
     Hub.subscribe("global", {:goodbye, name})
     assert Hub.publish("global", {:hello, "World"}) == 0
-
-    Hub.subscribe("global", {:hello, name})
-    assert Hub.publish("global", {:hello, "World"}) == 1
+    assert Hub.publish("global", {:goodbye, "World"}) == 1
   end
 
   test "subscribe and publish multiple times from same process" do
@@ -193,9 +193,26 @@ defmodule HubTest do
     assert Hub.subscribers("global") == []
   end
 
+  test "multiple subscriptions with count: 1 in process that dies" do
+    spawn(fn ->
+      {:ok, _ref} = Hub.subscribe("global", {:hello, name}, count: 1)
+      {:ok, _ref} = Hub.subscribe("global", {:goodbye, name})
+      Hub.publish("global", {:hello, "World"})
+    end)
+
+    assert Hub.subscribers("global") == []
+  end
+
   test "unsubscribe with unknown ref" do
+    {:ok, {channel, _ref}} = Hub.subscribe("global", {:hello, name})
     invalid_ref = make_ref()
-    :ok = Hub.unsubscribe(invalid_ref)
+    :ok = Hub.unsubscribe({channel, invalid_ref})
+  end
+
+  test "unsubscribe with unknown pid" do
+    invalid_ref = make_ref()
+    pid = spawn(fn -> :ok end)
+    :ok = Hub.unsubscribe({pid, invalid_ref})
   end
 
   test "race condition on publish and auto-unsubscribe" do
@@ -206,5 +223,13 @@ defmodule HubTest do
 
     assert_receive({:hello, "World"})
     refute_receive({:hello, "World"})
+  end
+
+  test "publish to channel without subscribers" do
+    count_before = DynamicSupervisor.count_children(ChannelSupervisor)
+    assert Hub.publish("publish to channel without subscribers", :hello) == 0
+    count_after = DynamicSupervisor.count_children(ChannelSupervisor)
+
+    assert count_before == count_after
   end
 end

@@ -6,7 +6,6 @@ defmodule Hub.Channel do
 
   alias Hub.ChannelRegistry
   alias Hub.Subscriber
-  alias Hub.Tracker
 
   use GenServer
 
@@ -15,8 +14,7 @@ defmodule Hub.Channel do
   @type count :: pos_integer | :infinity
   @type pattern :: any
 
-  @subscription_topic "Hub.subscriptions"
-  @tracker_topic_prefix "Hub.subscribers."
+  @type subscription_ref :: {pid, reference}
 
   # Public API
 
@@ -31,10 +29,10 @@ defmodule Hub.Channel do
   @doc """
   Subscribes with the quoted pattern
   """
-  @spec subscribe_quoted(String.t(), any, subscribe_options) :: {:ok, reference} | {:error, reason :: String}
-  def subscribe_quoted(channel_name, quoted_pattern, options \\ []) do
+  @spec subscribe_quoted(pid, any, subscribe_options) :: {:ok, subscription_ref} | {:error, reason :: String}
+  def subscribe_quoted(channel, quoted_pattern, options \\ []) do
     map_options = options |> Enum.into(%{})
-    do_subscribe_quoted(channel_name, quoted_pattern, map_options)
+    do_subscribe_quoted(channel, quoted_pattern, map_options)
   end
 
   @doc """
@@ -49,29 +47,21 @@ defmodule Hub.Channel do
   @doc """
   Get all subscribers from channel
   """
-  @spec subscribers(String.t()) :: [Subscriber.t()]
-  def subscribers(channel_name) do
-    channel_name
-    |> tracker_topic
-    |> Tracker.list()
-    |> Enum.map(fn {_key, %{subscriber: subscriber}} -> subscriber end)
+  @spec subscribers(pid) :: [Subscriber.t()]
+  def subscribers(channel) do
+    GenServer.call(channel, :subscribers)
   end
 
   @doc """
   Unsubscribes using the reference returned on subscribe
   """
-  @spec unsubscribe(reference) :: :ok
-  def unsubscribe(ref) do
-    @subscription_topic
-    |> Tracker.list()
-    |> Enum.find(&match?({^ref, _}, &1))
-    |> case do
-      nil ->
-        :ok
+  @spec unsubscribe(subscription_ref) :: :ok
+  def unsubscribe({channel, ref}) do
+    case GenServer.whereis(channel) do
+      pid when is_pid(pid) ->
+        GenServer.cast(pid, {:unsubscribe, ref})
 
-      {^ref, %{subscriber: subscriber}} ->
-        :ok = Tracker.untrack(subscriber.pid, tracker_topic(subscriber.channel_name), ref)
-        :ok = Tracker.untrack(subscriber.pid, @subscription_topic, ref)
+      nil ->
         :ok
     end
   end
@@ -81,22 +71,71 @@ defmodule Hub.Channel do
   def init(channel_name) do
     case ChannelRegistry.register(channel_name) do
       :ok ->
-        {:ok, channel_name}
+        state = %{
+          # ref => subscriber
+          subscriber_by_ref: %{},
+          # pid => %{ref => subscriber}
+          subscribers_by_pid: %{}
+        }
+
+        {:ok, state}
 
       {:duplicate_key, _pid} ->
         :ignore
     end
   end
 
-  def handle_call({:publish, message}, _from, channel_name) do
-    num_subscribers =
-      channel_name
-      |> subscribers()
+  def handle_call({:publish, message}, _from, state) do
+    subscribers =
+      state.subscriber_by_ref
+      |> Map.values()
       |> Enum.filter(&publish_to_subscriber?(message, &1))
-      |> Enum.map(&publish_to_subscriber(message, &1))
-      |> length
 
-    {:reply, num_subscribers, channel_name}
+    state =
+      subscribers
+      |> Enum.reduce(state, &publish_to_subscriber(&2, message, &1))
+
+    {:reply, length(subscribers), state}
+  end
+
+  def handle_call({:subscribe_quoted, quoted_pattern, options, caller}, _from, state) do
+    pid = options |> Map.get(:pid, caller)
+    count = options |> Map.get(:count, :infinity)
+    multi = options |> Map.get(:multi, false)
+
+    subscriber = Subscriber.new(pid, quoted_pattern, count, multi)
+    Process.monitor(pid)
+
+    state = add_subscriber(state, subscriber)
+
+    {:reply, {:ok, {self(), subscriber.ref}}, state}
+  end
+
+  def handle_call(:subscribers, _from, state) do
+    {:reply, Map.values(state.subscriber_by_ref), state}
+  end
+
+  def handle_cast({:unsubscribe, ref}, state) do
+    state =
+      case Map.fetch(state.subscriber_by_ref, ref) do
+        {:ok, subscriber} ->
+          remove_subscriber(state, subscriber)
+
+        :error ->
+          state
+      end
+
+    {:noreply, state}
+  end
+
+  def handle_info({:DOWN, _monitor, :process, pid, _reason}, state) do
+    state =
+      state.subscribers_by_pid
+      |> Map.get(pid, %{})
+      |> Map.values()
+      |> Enum.reduce(state, fn subscriber, state -> remove_subscriber(state, subscriber) end)
+
+    {:noreply, state}
   end
 
   # Helpers
@@ -110,22 +149,26 @@ defmodule Hub.Channel do
     pattern_match?(subscriber.pattern, term)
   end
 
-  defp publish_to_subscriber(term, subscriber) do
-    update_subscriber(subscriber)
+  defp publish_to_subscriber(state, term, subscriber) do
+    state = update_subscriber(state, subscriber)
     send(subscriber.pid, term)
+    state
   end
 
-  defp update_subscriber(%{count: :infinity}) do
-    :ok
+  defp update_subscriber(state, %{count: :infinity}) do
+    state
   end
 
-  defp update_subscriber(%{count: 1, ref: ref}) do
-    unsubscribe(ref)
+  defp update_subscriber(state, %{count: 1} = subscriber) do
+    remove_subscriber(state, subscriber)
   end
 
-  defp update_subscriber(%{count: count, pid: pid, channel_name: channel_name} = subscriber) when count > 1 do
-    subscriber = %{subscriber | count: count - 1}
-    Tracker.update(pid, tracker_topic(channel_name), subscriber.ref, %{subscriber: subscriber})
+  defp update_subscriber(state, %{count: count} = subscriber) when count > 1 do
+    new_subscriber = %{subscriber | count: count - 1}
+
+    state
+    |> remove_subscriber(subscriber)
+    |> add_subscriber(new_subscriber)
   end
 
   defp pattern_match?(pattern, term) do
@@ -143,27 +186,36 @@ defmodule Hub.Channel do
     result
   end
 
-  defp tracker_topic(channel_name) when is_binary(channel_name) do
-    @tracker_topic_prefix <> channel_name
-  end
-
   defp do_subscribe_quoted(_channel, quoted_pattern, %{multi: true}) when not is_list(quoted_pattern) do
     {:error, "Must subscribe with a list of patterns when using multi: true"}
   end
 
-  defp do_subscribe_quoted(channel_name, quoted_pattern, options) do
+  defp do_subscribe_quoted(channel, quoted_pattern, options) do
     # Try to pattern match to catch syntax errors before publishing
     pattern_match?(quoted_pattern, nil)
 
-    pid = options |> Map.get(:pid, self())
-    count = options |> Map.get(:count, :infinity)
-    multi = options |> Map.get(:multi, false)
+    GenServer.call(channel, {:subscribe_quoted, quoted_pattern, options, self()})
+  end
 
-    subscriber = Subscriber.new(channel_name, pid, quoted_pattern, count, multi)
+  defp add_subscriber(state, subscriber) do
+    %{
+      state
+      | subscriber_by_ref: Map.put(state.subscriber_by_ref, subscriber.ref, subscriber),
+        subscribers_by_pid:
+          Map.update(state.subscribers_by_pid, subscriber.pid, %{subscriber.ref => subscriber}, fn subscribers ->
+            Map.put(subscribers, subscriber.ref, subscriber)
+          end)
+    }
+  end
 
-    {:ok, _} = Tracker.track(pid, tracker_topic(channel_name), subscriber.ref, %{subscriber: subscriber})
-    {:ok, _} = Tracker.track(pid, @subscription_topic, subscriber.ref, %{subscriber: subscriber})
-
-    {:ok, subscriber.ref}
+  defp remove_subscriber(state, subscriber) do
+    %{
+      state
+      | subscriber_by_ref: Map.delete(state.subscriber_by_ref, subscriber.ref),
+        subscribers_by_pid:
+          Map.update(state.subscribers_by_pid, subscriber.pid, %{}, fn subscribers ->
+            Map.delete(subscribers, subscriber.ref)
+          end)
+    }
   end
 end

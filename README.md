@@ -1,8 +1,8 @@
 # Hub
 
-A pub-sub hub that builds on top of phoenix_pubsub. Phoenix is not required.
+A single_node pub-sub hub with pattern matching subscriptions.
 
-With Hub, a subscription is made with a pattern to match messages.
+It has no dependencies.
 
 Example:
 
@@ -32,9 +32,6 @@ end
 [![CircleCI](https://circleci.com/gh/wise-home/hub.svg?style=svg)](https://circleci.com/gh/wise-home/hub)
 
 ## How it works and what you should know.
-
-Hub utlizes `Tracker` and `PubSub` of phoenix_pubsub to provide a robust and simple pub-sub hub where processes can
-subscribe to messages with an Elixir pattern just like guard clauses.
 
 Behind the scenes the pattern is "decompiled" into an Elixir AST and saved with the subscription. When a message is
 published to a channel, the pattern of each subscription is checked against the message and the subscriptions that

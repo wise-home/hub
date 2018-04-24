@@ -9,8 +9,6 @@ defmodule Hub.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      supervisor(Phoenix.PubSub.PG2, [Hub.PubSub, []]),
-      worker(Hub.Tracker, [[name: Hub.Tracker, pubsub_server: Hub.PubSub]]),
       Hub.ChannelSupervisor,
       Hub.ChannelRegistry
     ]
