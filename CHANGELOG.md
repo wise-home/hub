@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.0 - 2018-04-24
+
+* Now has no external dependencies. Removed Phoenix PubSub in favor of in-process state in `Channel`.
+
+This is a somewhat backwards incompatible update:
+
+* Since Phoenix PubSub is no longer used, it is no longer using CRDTs to sync state between nodes. However, Hub was
+really not compatible with multiple nodes before anyway.
+* The return type of `Hub.subscribe/3` and `Hub.subscribe_quoted/3` is now
+`Channel.subscription_ref :: {pid, reference}` instead of `reference`. This is now also the type that `Hub.unsubscribe`
+accepts. If the calling code don't require the return value to be a `reference` it will continue to work as before.
+
 ## 0.5.0 - 2018-04-20
 
 * Runs every channel in its own process to avoid race condition
