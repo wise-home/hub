@@ -23,7 +23,7 @@ Add `hub` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:hub, "~> 0.5"}]
+  [{:hub, "~> 0.6"}]
 end
 ```
 
