@@ -232,4 +232,31 @@ defmodule HubTest do
 
     assert count_before == count_after
   end
+
+  test "subscribe to same channel from two different processes" do
+    parent = self()
+
+    process = fn ->
+      Hub.subscribe("global", :hello)
+
+      send(parent, :ready)
+
+      receive do
+        :hello -> :ok
+      end
+
+      send(parent, :done)
+    end
+
+    spawn_link(process)
+    spawn_link(process)
+
+    assert_receive(:ready)
+    assert_receive(:ready)
+
+    Hub.publish("global", :hello)
+
+    assert_receive(:done)
+    assert_receive(:done)
+  end
 end

@@ -116,8 +116,15 @@ defmodule Hub do
         channel
 
       :not_found ->
-        {:ok, channel} = ChannelSupervisor.start_child(channel_name)
-        channel
+        case ChannelSupervisor.start_child(channel_name) do
+          {:ok, channel} ->
+            channel
+
+          :ignore ->
+            # Handle race condition where two processes are creating a channel at the same time
+            {:ok, channel} = lookup_channel(channel_name)
+            channel
+        end
     end
   end
 
