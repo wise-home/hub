@@ -74,7 +74,7 @@ defmodule Hub.Channel do
         state = %{
           # ref => subscriber
           subscriber_by_ref: %{},
-          # pid => [subscriber]
+          # pid => %{ref => subscriber}
           subscribers_by_pid: %{}
         }
 
@@ -131,7 +131,8 @@ defmodule Hub.Channel do
   def handle_info({:DOWN, _monitor, :process, pid, _reason}, state) do
     state =
       state.subscribers_by_pid
-      |> Map.get(pid, [])
+      |> Map.get(pid, %{})
+      |> Map.values()
       |> Enum.reduce(state, fn subscriber, state -> remove_subscriber(state, subscriber) end)
 
     {:noreply, state}
@@ -201,8 +202,8 @@ defmodule Hub.Channel do
       state
       | subscriber_by_ref: Map.put(state.subscriber_by_ref, subscriber.ref, subscriber),
         subscribers_by_pid:
-          Map.update(state.subscribers_by_pid, subscriber.pid, [subscriber], fn subscribers ->
-            [subscriber | subscribers]
+          Map.update(state.subscribers_by_pid, subscriber.pid, %{subscriber.ref => subscriber}, fn subscribers ->
+            Map.put(subscribers, subscriber.ref, subscriber)
           end)
     }
   end
@@ -211,7 +212,10 @@ defmodule Hub.Channel do
     %{
       state
       | subscriber_by_ref: Map.delete(state.subscriber_by_ref, subscriber.ref),
-        subscribers_by_pid: Map.delete(state.subscribers_by_pid, subscriber.pid)
+        subscribers_by_pid:
+          Map.update(state.subscribers_by_pid, subscriber.pid, %{}, fn subscribers ->
+            Map.delete(subscribers, subscriber.ref)
+          end)
     }
   end
 end

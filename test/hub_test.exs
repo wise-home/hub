@@ -193,6 +193,16 @@ defmodule HubTest do
     assert Hub.subscribers("global") == []
   end
 
+  test "multiple subscriptions with count: 1 in process that dies" do
+    spawn(fn ->
+      {:ok, _ref} = Hub.subscribe("global", {:hello, name}, count: 1)
+      {:ok, _ref} = Hub.subscribe("global", {:goodbye, name})
+      Hub.publish("global", {:hello, "World"})
+    end)
+
+    assert Hub.subscribers("global") == []
+  end
+
   test "unsubscribe with unknown ref" do
     {:ok, {channel, _ref}} = Hub.subscribe("global", {:hello, name})
     invalid_ref = make_ref()
