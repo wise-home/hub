@@ -6,7 +6,6 @@ defmodule Hub.Subscriber do
   @type t :: %__MODULE__{}
 
   defstruct [
-    :channel_name,
     :pid,
     :pattern,
     :count,
@@ -14,11 +13,10 @@ defmodule Hub.Subscriber do
     :ref
   ]
 
-  def new(channel_name, pid, pattern, count, multi) do
+  def new(pid, pattern, count, multi) do
     ref = make_ref()
 
     %__MODULE__{
-      channel_name: channel_name,
       pid: pid,
       pattern: pattern,
       count: count,

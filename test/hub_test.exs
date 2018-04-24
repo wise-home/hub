@@ -194,8 +194,15 @@ defmodule HubTest do
   end
 
   test "unsubscribe with unknown ref" do
+    {:ok, {channel, _ref}} = Hub.subscribe("global", {:hello, name})
     invalid_ref = make_ref()
-    :ok = Hub.unsubscribe(invalid_ref)
+    :ok = Hub.unsubscribe({channel, invalid_ref})
+  end
+
+  test "unsubscribe with unknown pid" do
+    invalid_ref = make_ref()
+    pid = spawn(fn -> :ok end)
+    :ok = Hub.unsubscribe({pid, invalid_ref})
   end
 
   test "race condition on publish and auto-unsubscribe" do

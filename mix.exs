@@ -24,7 +24,6 @@ defmodule Hub.Mixfile do
 
   defp deps do
     [
-      {:phoenix_pubsub, "~> 1.0"},
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:credo, "~> 0.5", only: [:dev, :test]},
       {:dialyxir, "~> 0.4", only: [:dev, :test]}
@@ -33,9 +32,7 @@ defmodule Hub.Mixfile do
 
   defp description do
     """
-    Hub is a PubSub hub with pattern matching subscription.
-
-    It builds on top of phoenix_pubsub, but phoenix is not required to use Hub.
+    Hub is a single node PubSub hub with pattern matching subscription.
     """
   end
 

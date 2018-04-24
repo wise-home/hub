@@ -13,25 +13,12 @@ defmodule Hub do
   alias Hub.Channel
   alias Hub.ChannelRegistry
   alias Hub.ChannelSupervisor
-
-  @doc """
-  Get all subscribers from channel
-  """
-  defdelegate subscribers(channel_name), to: Channel
+  alias Hub.Subscriber
 
   @doc """
   Unsubscribes using the reference returned on subscribe
   """
   defdelegate unsubscribe(ref), to: Channel
-
-  @doc """
-  Subscribes to the quoted pattern in the given channel_name
-
-  example:
-
-    Hub.subscribe("global", quote do: %{count: count} when count > 42)
-  """
-  defdelegate subscribe_quoted(channel_name, quoted_pattern, options \\ []), to: Channel
 
   @doc """
   Convenience macro for subscribing without the need to unquote the pattern.
@@ -57,6 +44,34 @@ defmodule Hub do
   def publish(channel_name, term) do
     channel = upsert_channel(channel_name)
     Channel.publish(channel, term)
+  end
+
+  @doc """
+  Subscribes to the quoted pattern in the given channel_name
+
+  example:
+
+  Hub.subscribe("global", quote do: %{count: count} when count > 42)
+  """
+  @spec subscribe_quoted(String.t(), any, Channel.subscribe_options()) ::
+          {:ok, Channel.subscription_ref()} | {:error, reason :: String.t()}
+  def subscribe_quoted(channel_name, quoted_pattern, options \\ []) do
+    channel = upsert_channel(channel_name)
+    Channel.subscribe_quoted(channel, quoted_pattern, options)
+  end
+
+  @doc """
+  Get all subscribers from channel
+  """
+  @spec subscribers(String.t()) :: [Subscriber.t()]
+  def subscribers(channel_name) do
+    case lookup_channel(channel_name) do
+      {:ok, channel} ->
+        Channel.subscribers(channel)
+
+      :not_found ->
+        []
+    end
   end
 
   @doc false
@@ -91,7 +106,7 @@ defmodule Hub do
   end
 
   defp upsert_channel(channel_name) do
-    case ChannelRegistry.lookup(channel_name) do
+    case lookup_channel(channel_name) do
       {:ok, channel} ->
         channel
 
@@ -99,5 +114,9 @@ defmodule Hub do
         {:ok, channel} = ChannelSupervisor.start_child(channel_name)
         channel
     end
+  end
+
+  defp lookup_channel(channel_name) do
+    ChannelRegistry.lookup(channel_name)
   end
 end
