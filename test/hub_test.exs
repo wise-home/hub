@@ -1,6 +1,8 @@
 defmodule HubTest do
   use ExUnit.Case
 
+  alias Hub.ChannelSupervisor
+
   require Hub
 
   test "subscribe and publish in same process" do
@@ -94,9 +96,7 @@ defmodule HubTest do
   test "publish returns the number of receivers" do
     Hub.subscribe("global", {:goodbye, name})
     assert Hub.publish("global", {:hello, "World"}) == 0
-
-    Hub.subscribe("global", {:hello, name})
-    assert Hub.publish("global", {:hello, "World"}) == 1
+    assert Hub.publish("global", {:goodbye, "World"}) == 1
   end
 
   test "subscribe and publish multiple times from same process" do
@@ -223,5 +223,13 @@ defmodule HubTest do
 
     assert_receive({:hello, "World"})
     refute_receive({:hello, "World"})
+  end
+
+  test "publish to channel without subscribers" do
+    count_before = DynamicSupervisor.count_children(ChannelSupervisor)
+    assert Hub.publish("publish to channel without subscribers", :hello) == 0
+    count_after = DynamicSupervisor.count_children(ChannelSupervisor)
+
+    assert count_before == count_after
   end
 end

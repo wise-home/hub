@@ -42,8 +42,13 @@ defmodule Hub do
   """
   @spec publish(String.t(), any) :: non_neg_integer
   def publish(channel_name, term) do
-    channel = upsert_channel(channel_name)
-    Channel.publish(channel, term)
+    case lookup_channel(channel_name) do
+      {:ok, channel} ->
+        Channel.publish(channel, term)
+
+      :not_found ->
+        0
+    end
   end
 
   @doc """
