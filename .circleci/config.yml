@@ -3,9 +3,10 @@ jobs:
   build:
     parallelism: 1
     docker:
-      - image: circleci/elixir:1.6.4
+      - image: circleci/elixir:1.6.5
         environment:
           MIX_ENV: test
+          CACHE_VERSION: v1
 
     working_directory: ~/app
 
@@ -14,8 +15,8 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-{{ .Branch }}
-            - cache-master
+            - cache-{{ checksum "~/.cache_version" }}-{{ .Branch }}
+            - cache-{{ checksum "~/.cache_version" }}-master
 
       - run: mix local.hex --force
       - run: mix local.rebar --force
@@ -26,7 +27,7 @@ jobs:
       - run: mix dialyzer --plt --no-compile
 
       - save_cache:
-          key: cache-{{ .Branch }}-{{ .BuildNum }}
+          key: cache-{{ checksum "~/.cache_version" }}-{{ .Branch }}-{{ .BuildNum }}
           paths:
             - _build
             - deps
