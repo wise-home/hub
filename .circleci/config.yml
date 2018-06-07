@@ -13,6 +13,10 @@ jobs:
     steps:
       - checkout
 
+      - run:
+          name: Save cache version to file
+          command: echo "$CACHE_VERSION" > ~/.cache_version
+
       - restore_cache:
           keys:
             - cache-{{ checksum "~/.cache_version" }}-{{ .Branch }}
