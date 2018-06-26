@@ -3,14 +3,19 @@ jobs:
   build:
     parallelism: 1
     docker:
+      # This version of Elixir is overruled by asdf below
       - image: circleci/elixir:1.6.5
         environment:
           MIX_ENV: test
-          CACHE_VERSION: v1
+          CACHE_VERSION: v2
 
     working_directory: ~/app
 
     steps:
+      - run:
+          name: "Set PATH"
+          command: echo 'export PATH=$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH' >> $BASH_ENV
+
       - checkout
 
       - run:
@@ -21,6 +26,14 @@ jobs:
           keys:
             - cache-{{ checksum "~/.cache_version" }}-{{ .Branch }}
             - cache-{{ checksum "~/.cache_version" }}-master
+
+      # Control the exact version of Elixir and Erlang via .tool-versions
+      - run: sudo apt install -y build-essential autoconf m4 libncurses5-dev libwxgtk3.0-dev libgl1-mesa-dev libglu1-mesa-dev libssh-dev unixodbc-dev xsltproc
+      - run: if [ ! -d ~/.asdf ] ; then git clone https://github.com/asdf-vm/asdf.git ~/.asdf; fi
+      - run: if ! asdf plugin-list | grep erlang; then asdf plugin-add erlang https://github.com/asdf-vm/asdf-erlang.git; fi
+      - run: if ! asdf plugin-list | grep elixir; then asdf plugin-add elixir https://github.com/asdf-vm/asdf-elixir.git; fi
+      - run: erlang_version=$(awk '/erlang/ { print $2 }' .tool-versions) && asdf install erlang ${erlang_version}
+      - run: elixir_version=$(awk '/elixir/ { print $2 }' .tool-versions) && asdf install elixir ${elixir_version}
 
       - run: mix local.hex --force
       - run: mix local.rebar --force
@@ -35,6 +48,7 @@ jobs:
           paths:
             - _build
             - deps
+            - ~/.asdf
 
       - run: mix test
       - run: mix credo
