@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.2 - 2018-07-30
+
+* Fixed warnings new to Elixir 1.7
+
 ## 0.6.1 - 2018-04-24
 
 * Fixed race condition if two processes try to start the same channel at the same time by calling subscribe.
