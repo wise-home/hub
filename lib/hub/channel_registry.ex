@@ -18,7 +18,7 @@ defmodule Hub.ChannelRegistry do
   """
   @spec start_link() :: {:ok, pid} | {:error, reason :: any}
   def start_link do
-    Registry.start_link(:unique, @name)
+    Registry.start_link(keys: :unique, name: @name)
   end
 
   @doc """
