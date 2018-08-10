@@ -7,7 +7,7 @@ jobs:
       - image: circleci/elixir:1.6.5
         environment:
           MIX_ENV: test
-          CACHE_VERSION: v3
+          CACHE_VERSION: v4
 
     working_directory: ~/app
 
