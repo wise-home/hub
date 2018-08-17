@@ -27,6 +27,10 @@ jobs:
             - cache-{{ checksum "~/.cache_version" }}-{{ .Branch }}
             - cache-{{ checksum "~/.cache_version" }}-master
 
+      - run:
+          name: Update apt
+          command: sudo apt update
+
       # Control the exact version of Elixir and Erlang via .tool-versions
       - run: sudo apt install -y build-essential autoconf m4 libncurses5-dev libwxgtk3.0-dev libgl1-mesa-dev libglu1-mesa-dev libssh-dev unixodbc-dev xsltproc
       - run: if [ ! -d ~/.asdf ] ; then git clone https://github.com/asdf-vm/asdf.git ~/.asdf; fi
