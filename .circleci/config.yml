@@ -1,6 +1,6 @@
 default_env: &default_env
   MIX_ENV: test
-  CACHE_VERSION: v5
+  CACHE_VERSION: v6
 
 default_build: &default_build
   parallelism: 1
@@ -68,8 +68,8 @@ jobs:
       - image: circleci/elixir:1.6.5
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.7.2-otp-21
-          ERLANG_VERSION: 21.0.5
+          ELIXIR_VERSION: 1.7.3-otp-21
+          ERLANG_VERSION: 21.0.6
 
   "elixir 1.7 - erlang 20.3":
     <<: *default_build
