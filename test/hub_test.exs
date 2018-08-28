@@ -6,9 +6,9 @@ defmodule HubTest do
   require Hub
 
   test "subscribe and publish in same process" do
-    Hub.subscribe_quoted("global", quote(do: {:hello, _name}))
-    Hub.publish("global", {:hello, "World"})
-    Hub.publish("global", {:goodbye, "World"})
+    Hub.subscribe_quoted("test1", quote(do: {:hello, _name}))
+    Hub.publish("test1", {:hello, "World"})
+    Hub.publish("test1", {:goodbye, "World"})
 
     assert_receive({:hello, "World"})
     refute_receive({:goodbye, "World"})
@@ -24,27 +24,27 @@ defmodule HubTest do
         end
       end)
 
-    Hub.subscribe_quoted("global", quote(do: {:hello, _name}), pid: child)
+    Hub.subscribe_quoted("test2", quote(do: {:hello, _name}), pid: child)
 
-    Hub.publish("global", {:hello, "World"})
+    Hub.publish("test2", {:hello, "World"})
     assert_receive({:received, "World"})
   end
 
   test "subscribe with macro" do
-    Hub.subscribe("global", {:hello, _name})
-    Hub.publish("global", {:hello, "World"})
+    Hub.subscribe("test3", {:hello, _name})
+    Hub.publish("test3", {:hello, "World"})
 
     assert_receive({:hello, "World"})
   end
 
   test "subscribe once" do
-    Hub.subscribe("global", {:hello, _name}, count: 1)
-    Hub.publish("global", {:hello, "World"})
-    Hub.publish("global", {:hello, "You"})
+    Hub.subscribe("test4", {:hello, _name}, count: 1)
+    Hub.publish("test4", {:hello, "World"})
+    Hub.publish("test4", {:hello, "You"})
 
     assert_receive({:hello, "World"})
     refute_receive({:hello, "You"})
-    assert Hub.subscribers("global") == []
+    assert Hub.subscribers("test4") == []
   end
 
   test "auto unsubscribe dead processes" do
@@ -57,18 +57,18 @@ defmodule HubTest do
         end
       end)
 
-    Hub.subscribe("global", {:hello, _name}, pid: child)
+    Hub.subscribe("test5", {:hello, _name}, pid: child)
     Process.exit(child, :kill)
 
-    Hub.publish("global", {:hello, "World"})
+    Hub.publish("test5", {:hello, "World"})
     refute_receive({:received, "World"})
-    assert Hub.subscribers("global") == []
+    assert Hub.subscribers("test5") == []
   end
 
   test "handle double subscription" do
-    Hub.subscribe("global", {:hello, _name_1})
-    Hub.subscribe("global", {:hello, _name_2})
-    Hub.publish("global", {:hello, "World"})
+    Hub.subscribe("test6", {:hello, _name_1})
+    Hub.subscribe("test6", {:hello, _name_2})
+    Hub.publish("test6", {:hello, "World"})
 
     assert_receive({:hello, "World"})
     assert_receive({:hello, "World"})
@@ -76,27 +76,27 @@ defmodule HubTest do
 
   test "can subscribe to same event multiple times" do
     pattern = quote do: {:hello, _name}
-    Hub.subscribe_quoted("global", pattern)
-    Hub.subscribe_quoted("global", pattern)
-    Hub.publish("global", {:hello, "World"})
+    Hub.subscribe_quoted("test7", pattern)
+    Hub.subscribe_quoted("test7", pattern)
+    Hub.publish("test7", {:hello, "World"})
 
     assert_receive({:hello, "World"})
     assert_receive({:hello, "World"})
 
-    assert Hub.subscribers("global") |> length == 2
+    assert Hub.subscribers("test7") |> length == 2
   end
 
   test "does not send to wrong channel" do
     Hub.subscribe("1234", {:hello, _name})
-    Hub.publish("global", {:hello, "World"})
+    Hub.publish("test8", {:hello, "World"})
 
     refute_receive({:hello, "World"})
   end
 
   test "publish returns the number of receivers" do
-    Hub.subscribe("global", {:goodbye, _name})
-    assert Hub.publish("global", {:hello, "World"}) == 0
-    assert Hub.publish("global", {:goodbye, "World"}) == 1
+    Hub.subscribe("test9", {:goodbye, _name})
+    assert Hub.publish("test9", {:hello, "World"}) == 0
+    assert Hub.publish("test9", {:goodbye, "World"}) == 1
   end
 
   test "subscribe and publish multiple times from same process" do
@@ -104,7 +104,7 @@ defmodule HubTest do
 
     task =
       Task.async(fn ->
-        Hub.subscribe("global", {:hello, _name}, count: 1)
+        Hub.subscribe("test10", {:hello, _name}, count: 1)
         send(me, :subscribed)
 
         result =
@@ -112,7 +112,7 @@ defmodule HubTest do
             {:hello, name} -> [name]
           end
 
-        Hub.subscribe("global", {:hello, _name}, count: 1)
+        Hub.subscribe("test10", {:hello, _name}, count: 1)
         send(me, :subscribed)
 
         receive do
@@ -124,13 +124,13 @@ defmodule HubTest do
       :subscribed -> :ok
     end
 
-    assert Hub.publish("global", {:hello, "You"}) == 1
+    assert Hub.publish("test10", {:hello, "You"}) == 1
 
     receive do
       :subscribed -> :ok
     end
 
-    assert Hub.publish("global", {:hello, "Me"}) == 1
+    assert Hub.publish("test10", {:hello, "Me"}) == 1
 
     result = Task.await(task)
     assert result == ~w(Me You)
@@ -138,8 +138,8 @@ defmodule HubTest do
 
   test "local variables parts of pattern" do
     name = "World"
-    Hub.subscribe("global", {:hello, ^name}, bind_quoted: [name: name])
-    Hub.publish("global", {:hello, "World"})
+    Hub.subscribe("test11", {:hello, ^name}, bind_quoted: [name: name])
+    Hub.publish("test11", {:hello, "World"})
 
     assert_receive({:hello, "World"})
   end
@@ -147,64 +147,64 @@ defmodule HubTest do
   test "local complex variable" do
     map = %{foo: "bar"}
 
-    Hub.subscribe("global", %{map: ^map}, bind_quoted: [map: map])
+    Hub.subscribe("test12", %{map: ^map}, bind_quoted: [map: map])
     message = %{map: %{foo: "bar"}, other: "key"}
-    Hub.publish("global", message)
+    Hub.publish("test12", message)
 
     assert_receive(^message)
   end
 
   test "pin function call should raise error" do
     assert_raise CompileError, ~r/undefined function fun/, fn ->
-      Hub.subscribe("global", ^fun(var), bind_quoted: [fun: 42])
-      Hub.publish("global", "message")
+      Hub.subscribe("test13", ^fun(var), bind_quoted: [fun: 42])
+      Hub.publish("test13", "message")
     end
   end
 
   test "subscribe with multiple patterns" do
-    Hub.subscribe("global", [{:hello, _name_1}, {:goodbye, _name_2}], multi: true)
-    Hub.publish("global", {:hello, "World"})
-    Hub.publish("global", {:goodbye, "World"})
+    Hub.subscribe("test14", [{:hello, _name_1}, {:goodbye, _name_2}], multi: true)
+    Hub.publish("test14", {:hello, "World"})
+    Hub.publish("test14", {:goodbye, "World"})
 
     assert_receive({:hello, "World"})
     assert_receive({:goodbye, "World"})
   end
 
   test "subscribe with multiple patterns and count 1" do
-    Hub.subscribe("global", [{:hello, _name_1}, {:goodbye, _name_2}], multi: true, count: 1)
-    Hub.publish("global", {:hello, "World"})
-    Hub.publish("global", {:goodbye, "World"})
+    Hub.subscribe("test15", [{:hello, _name_1}, {:goodbye, _name_2}], multi: true, count: 1)
+    Hub.publish("test15", {:hello, "World"})
+    Hub.publish("test15", {:goodbye, "World"})
     assert_receive({:hello, "World"})
     refute_receive({:goodbye, "World"})
   end
 
   test "subscribe with multi, but quoted pattern is not an array" do
-    result = Hub.subscribe("global", :not_a_list, multi: true)
+    result = Hub.subscribe("test16", :not_a_list, multi: true)
     assert result == {:error, "Must subscribe with a list of patterns when using multi: true"}
   end
 
   test "subscribe, then unsubscribe" do
-    {:ok, ref} = Hub.subscribe("global", {:hello, _name})
+    {:ok, ref} = Hub.subscribe("test17", {:hello, _name})
     :ok = Hub.unsubscribe(ref)
 
-    Hub.publish("global", {:hello, "World"})
+    Hub.publish("test17", {:hello, "World"})
 
     refute_receive({:hello, "World"})
-    assert Hub.subscribers("global") == []
+    assert Hub.subscribers("test17") == []
   end
 
   test "multiple subscriptions with count: 1 in process that dies" do
     spawn(fn ->
-      {:ok, _ref} = Hub.subscribe("global", {:hello, _name}, count: 1)
-      {:ok, _ref} = Hub.subscribe("global", {:goodbye, _name})
-      Hub.publish("global", {:hello, "World"})
+      {:ok, _ref} = Hub.subscribe("test18", {:hello, _name}, count: 1)
+      {:ok, _ref} = Hub.subscribe("test18", {:goodbye, _name})
+      Hub.publish("test18", {:hello, "World"})
     end)
 
-    assert Hub.subscribers("global") == []
+    assert Hub.subscribers("test18") == []
   end
 
   test "unsubscribe with unknown ref" do
-    {:ok, {channel, _ref}} = Hub.subscribe("global", {:hello, _name})
+    {:ok, {channel, _ref}} = Hub.subscribe("test19", {:hello, _name})
     invalid_ref = make_ref()
     :ok = Hub.unsubscribe({channel, invalid_ref})
   end
@@ -216,10 +216,10 @@ defmodule HubTest do
   end
 
   test "race condition on publish and auto-unsubscribe" do
-    Hub.subscribe("global", {:hello, _name}, count: 1)
+    Hub.subscribe("test20", {:hello, _name}, count: 1)
 
-    spawn(fn -> Hub.publish("global", {:hello, "World"}) end)
-    spawn(fn -> Hub.publish("global", {:hello, "World"}) end)
+    spawn(fn -> Hub.publish("test20", {:hello, "World"}) end)
+    spawn(fn -> Hub.publish("test20", {:hello, "World"}) end)
 
     assert_receive({:hello, "World"})
     refute_receive({:hello, "World"})
@@ -237,7 +237,7 @@ defmodule HubTest do
     parent = self()
 
     process = fn ->
-      Hub.subscribe("global", :hello)
+      Hub.subscribe("test21", :hello)
 
       send(parent, :ready)
 
@@ -254,7 +254,7 @@ defmodule HubTest do
     assert_receive(:ready)
     assert_receive(:ready)
 
-    Hub.publish("global", :hello)
+    Hub.publish("test21", :hello)
 
     assert_receive(:done)
     assert_receive(:done)
