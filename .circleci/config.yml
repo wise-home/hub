@@ -60,6 +60,17 @@ default_build: &default_build
 
 version: 2
 jobs:
+  "elixir 1.7 - erlang 21.1":
+    <<: *default_build
+    docker:
+      # This version of Elixir is overruled by asdf
+      - image: circleci/elixir:1.6.5
+        environment:
+          <<: *default_env
+          ELIXIR_VERSION: 1.7.3-otp-21
+          ERLANG_VERSION: 21.1
+          CACHE_VERSION: v1
+
   "elixir 1.7 - erlang 21.0":
     <<: *default_build
     docker:
@@ -78,20 +89,20 @@ jobs:
       - image: circleci/elixir:1.6.5
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.7.2-otp-20
+          ELIXIR_VERSION: 1.7.3-otp-20
           ERLANG_VERSION: 20.3.8.6
-          CACHE_VERSION: v6
+          CACHE_VERSION: v7
 
-  "elixir 1.7 - erlang 20.2":
+  "elixir 1.6 - erlang 21.1":
     <<: *default_build
     docker:
       # This version of Elixir is overruled by asdf
       - image: circleci/elixir:1.6.5
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.7.2-otp-20
-          ERLANG_VERSION: 20.2.4
-          CACHE_VERSION: v6
+          ELIXIR_VERSION: 1.6.6-otp-21
+          ERLANG_VERSION: 21.1
+          CACHE_VERSION: v1
 
   "elixir 1.6 - erlang 21.0":
     <<: *default_build
@@ -101,8 +112,8 @@ jobs:
         environment:
           <<: *default_env
           ELIXIR_VERSION: 1.6.6-otp-21
-          ERLANG_VERSION: 21.0.5
-          CACHE_VERSION: v6
+          ERLANG_VERSION: 21.0.9
+          CACHE_VERSION: v7
 
   "elixir 1.6 - erlang 20.3":
     <<: *default_build
@@ -115,19 +126,12 @@ jobs:
           ERLANG_VERSION: 20.3.8.6
           CACHE_VERSION: v6
 
-  "elixir 1.6 - erlang 20.2":
-    <<: *default_build
-    docker:
-      # This version of Elixir is overruled by asdf
-      - image: circleci/elixir:1.6.5
-        environment:
-          <<: *default_env
-          ELIXIR_VERSION: 1.6.6-otp-20
-          ERLANG_VERSION: 20.2.4
-          CACHE_VERSION: v6
-
 workflows:
   version: 2
+  "elixir 1.7 - erlang 21.1":
+    jobs:
+      - "elixir 1.7 - erlang 21.1"
+
   "elixir 1.7 - erlang 21.0":
     jobs:
       - "elixir 1.7 - erlang 21.0"
@@ -136,9 +140,9 @@ workflows:
     jobs:
       - "elixir 1.7 - erlang 20.3"
 
-  "elixir 1.7 - erlang 20.2":
+  "elixir 1.6 - erlang 21.1":
     jobs:
-      - "elixir 1.7 - erlang 20.2"
+      - "elixir 1.6 - erlang 21.1"
 
   "elixir 1.6 - erlang 21.0":
     jobs:
@@ -147,7 +151,3 @@ workflows:
   "elixir 1.6 - erlang 20.3":
     jobs:
       - "elixir 1.6 - erlang 20.3"
-
-  "elixir 1.6 - erlang 20.2":
-    jobs:
-      - "elixir 1.6 - erlang 20.2"
