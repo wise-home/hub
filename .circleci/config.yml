@@ -68,8 +68,8 @@ jobs:
         environment:
           <<: *default_env
           ELIXIR_VERSION: 1.7.3-otp-21
-          ERLANG_VERSION: 21.1
-          CACHE_VERSION: v1
+          ERLANG_VERSION: 21.1.1
+          CACHE_VERSION: v2
 
   "elixir 1.7 - erlang 21.0":
     <<: *default_build
