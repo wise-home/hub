@@ -67,9 +67,9 @@ jobs:
       - image: circleci/elixir:1.6.5
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.7.3-otp-21
+          ELIXIR_VERSION: 1.7.4-otp-21
           ERLANG_VERSION: 21.1.1
-          CACHE_VERSION: v2
+          CACHE_VERSION: v3
 
   "elixir 1.7 - erlang 21.0":
     <<: *default_build
@@ -78,9 +78,9 @@ jobs:
       - image: circleci/elixir:1.6.5
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.7.3-otp-21
+          ELIXIR_VERSION: 1.7.4-otp-21
           ERLANG_VERSION: 21.0.9
-          CACHE_VERSION: v9
+          CACHE_VERSION: v10
 
   "elixir 1.7 - erlang 20.3":
     <<: *default_build
@@ -89,9 +89,9 @@ jobs:
       - image: circleci/elixir:1.6.5
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.7.3-otp-20
+          ELIXIR_VERSION: 1.7.4-otp-20
           ERLANG_VERSION: 20.3.8.6
-          CACHE_VERSION: v7
+          CACHE_VERSION: v8
 
   "elixir 1.6 - erlang 21.1":
     <<: *default_build
@@ -101,8 +101,8 @@ jobs:
         environment:
           <<: *default_env
           ELIXIR_VERSION: 1.6.6-otp-21
-          ERLANG_VERSION: 21.1
-          CACHE_VERSION: v1
+          ERLANG_VERSION: 21.1.1
+          CACHE_VERSION: v2
 
   "elixir 1.6 - erlang 21.0":
     <<: *default_build
