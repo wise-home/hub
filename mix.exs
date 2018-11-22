@@ -25,7 +25,7 @@ defmodule Hub.Mixfile do
   defp deps do
     [
       {:ex_doc, ">= 0.0.0", only: :dev},
-      {:credo, "~> 0.5", only: [:dev, :test]},
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 0.4", only: [:dev, :test]}
     ]
   end
