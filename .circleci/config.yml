@@ -35,7 +35,9 @@ default_build: &default_build
     - run: if [ ! -d ~/.asdf ] ; then git clone https://github.com/asdf-vm/asdf.git ~/.asdf; fi
     - run: if ! asdf plugin-list | grep erlang; then asdf plugin-add erlang https://github.com/asdf-vm/asdf-erlang.git; fi
     - run: if ! asdf plugin-list | grep elixir; then asdf plugin-add elixir https://github.com/asdf-vm/asdf-elixir.git; fi
-    - run: erlang_version=$(awk '/erlang/ { print $2 }' .tool-versions) && asdf install erlang ${erlang_version}
+    - run:
+        command: erlang_version=$(awk '/erlang/ { print $2 }' .tool-versions) && asdf install erlang ${erlang_version}
+        no_output_timeout: 20m
     - run: elixir_version=$(awk '/elixir/ { print $2 }' .tool-versions) && asdf install elixir ${elixir_version}
 
     - run: mix local.hex --force
