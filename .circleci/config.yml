@@ -32,7 +32,7 @@ default_build: &default_build
     - run: echo "erlang $ERLANG_VERSION" >> .tool-versions
     - run: cat .tool-versions
     - run: sudo apt install -y build-essential autoconf m4 libncurses5-dev libwxgtk3.0-dev libgl1-mesa-dev libglu1-mesa-dev libssh-dev unixodbc-dev xsltproc
-    - run: if [ ! -d ~/.asdf ] ; then git clone https://github.com/asdf-vm/asdf.git ~/.asdf; fi
+    - run: if [ ! -d ~/.asdf ] ; then git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.6.3; fi
     - run: if ! asdf plugin-list | grep erlang; then asdf plugin-add erlang https://github.com/asdf-vm/asdf-erlang.git; fi
     - run: if ! asdf plugin-list | grep elixir; then asdf plugin-add elixir https://github.com/asdf-vm/asdf-elixir.git; fi
     - run:
