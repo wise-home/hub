@@ -93,6 +93,8 @@
         {Credo.Check.Readability.StringSigils, []},
         {Credo.Check.Readability.TrailingBlankLine, []},
         {Credo.Check.Readability.TrailingWhiteSpace, []},
+        # TODO: enable by default in Credo 1.1
+        {Credo.Check.Readability.UnnecessaryAliasExpansion, false},
         {Credo.Check.Readability.VariableNames, []},
 
         #
@@ -102,7 +104,7 @@
         {Credo.Check.Refactor.CyclomaticComplexity, []},
         {Credo.Check.Refactor.FunctionArity, []},
         {Credo.Check.Refactor.LongQuoteBlocks, []},
-        {Credo.Check.Refactor.MapInto, []},
+        {Credo.Check.Refactor.MapInto, false},
         {Credo.Check.Refactor.MatchInCondition, []},
         {Credo.Check.Refactor.NegatedConditionsInUnless, []},
         {Credo.Check.Refactor.NegatedConditionsWithElse, []},
@@ -121,7 +123,7 @@
         {Credo.Check.Warning.ExpensiveEmptyEnumCheck, []},
         {Credo.Check.Warning.IExPry, []},
         {Credo.Check.Warning.IoInspect, []},
-        {Credo.Check.Warning.LazyLogging, []},
+        {Credo.Check.Warning.LazyLogging, false},
         {Credo.Check.Warning.OperationOnSameValues, []},
         {Credo.Check.Warning.OperationWithConstantResult, []},
         {Credo.Check.Warning.RaiseInsideRescue, []},
