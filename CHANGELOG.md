@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.3 - 2019-04-03
+
+* Use new ExDoc 0.20.0
+
 ## 0.6.2 - 2018-07-30
 
 * Fixed warnings new to Elixir 1.7
