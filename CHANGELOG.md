@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.4 - 2019-04-10
+
+* Use new ExDoc 0.20.1
+
 ## 0.6.3 - 2019-04-03
 
 * Use new ExDoc 0.20.0
