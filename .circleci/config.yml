@@ -69,9 +69,9 @@ jobs:
       - image: circleci/elixir:1.8
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.8.2-otp-22
-          ERLANG_VERSION: 22.0
-          CACHE_VERSION: v1
+          ELIXIR_VERSION: "1.8.2-otp-22"
+          ERLANG_VERSION: "22.0"
+          CACHE_VERSION: "v1"
 
   "elixir 1.8 - erlang 21.3":
     <<: *default_build
@@ -80,9 +80,9 @@ jobs:
       - image: circleci/elixir:1.8
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.8.2-otp-21
-          ERLANG_VERSION: 21.3.6
-          CACHE_VERSION: v3
+          ELIXIR_VERSION: "1.8.2-otp-21"
+          ERLANG_VERSION: "21.3.6"
+          CACHE_VERSION: "v3"
 
   "elixir 1.8 - erlang 21.2":
     <<: *default_build
@@ -91,9 +91,9 @@ jobs:
       - image: circleci/elixir:1.8
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.8.2-otp-21
-          ERLANG_VERSION: 21.2.7
-          CACHE_VERSION: v8
+          ELIXIR_VERSION: "1.8.2-otp-21"
+          ERLANG_VERSION: "21.2.7"
+          CACHE_VERSION: "v8"
 
   "elixir 1.7 - erlang 22.0":
     <<: *default_build
@@ -102,9 +102,9 @@ jobs:
       - image: circleci/elixir:1.8
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.7.4-otp-22
-          ERLANG_VERSION: 22.0
-          CACHE_VERSION: v1
+          ELIXIR_VERSION: "1.7.4-otp-22"
+          ERLANG_VERSION: "22.0"
+          CACHE_VERSION: "v1"
 
   "elixir 1.7 - erlang 21.3":
     <<: *default_build
@@ -113,9 +113,9 @@ jobs:
       - image: circleci/elixir:1.8
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.7.4-otp-21
-          ERLANG_VERSION: 21.3.6
-          CACHE_VERSION: v2
+          ELIXIR_VERSION: "1.7.4-otp-21"
+          ERLANG_VERSION: "21.3.6"
+          CACHE_VERSION: "v2"
 
   "elixir 1.7 - erlang 21.2":
     <<: *default_build
@@ -124,9 +124,9 @@ jobs:
       - image: circleci/elixir:1.8
         environment:
           <<: *default_env
-          ELIXIR_VERSION: 1.7.4-otp-21
-          ERLANG_VERSION: 21.2.7
-          CACHE_VERSION: v7
+          ELIXIR_VERSION: "1.7.4-otp-21"
+          ERLANG_VERSION: "21.2.7"
+          CACHE_VERSION: "v7"
 
 workflows:
   version: 2
