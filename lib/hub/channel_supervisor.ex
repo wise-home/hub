@@ -28,7 +28,7 @@ defmodule Hub.ChannelSupervisor do
   """
   # Replace with DynamicSupervisor.on_start_child when this PR is merged and released:
   # https://github.com/elixir-lang/elixir/pull/7590
-  @spec start_child(String.t()) :: Supervisor.on_start_child()
+  @spec start_child(String.t()) :: DynamicSupervisor.on_start_child()
   def start_child(channel_name) do
     DynamicSupervisor.start_child(@name, {Channel, channel_name})
   end
