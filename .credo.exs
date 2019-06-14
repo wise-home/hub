@@ -25,6 +25,10 @@
         excluded: [~r"/_build/", ~r"/deps/", ~r"/node_modules/"]
       },
       #
+      # Load and configure plugins here:
+      #
+      plugins: [],
+      #
       # If you create your own checks, you must specify the source files for
       # them here, so they can be loaded by Credo before running the analysis.
       #
@@ -64,8 +68,7 @@
         # You can customize the priority of any check
         # Priority values are: `low, normal, high, higher`
         #
-        {Credo.Check.Design.AliasUsage,
-         [priority: :low, if_nested_deeper_than: 2, if_called_more_often_than: 0]},
+        {Credo.Check.Design.AliasUsage, [priority: :low, if_nested_deeper_than: 2, if_called_more_often_than: 0]},
         # You can also customize the exit_status of each check.
         # If you don't want TODO comments to cause `mix credo` to fail, just
         # set this value to 0 (zero).
@@ -108,12 +111,8 @@
         {Credo.Check.Refactor.NegatedConditionsInUnless, []},
         {Credo.Check.Refactor.NegatedConditionsWithElse, []},
         {Credo.Check.Refactor.Nesting, []},
-        {Credo.Check.Refactor.PipeChainStart,
-         [
-           excluded_argument_types: [:atom, :binary, :fn, :keyword, :number],
-           excluded_functions: []
-         ]},
         {Credo.Check.Refactor.UnlessWithElse, []},
+        {Credo.Check.Refactor.WithClauses, []},
 
         #
         ## Warnings
@@ -141,10 +140,12 @@
         {Credo.Check.Design.DuplicatedCode, false},
         {Credo.Check.Readability.MultiAlias, false},
         {Credo.Check.Readability.Specs, false},
+        {Credo.Check.Readability.SinglePipe, false},
         {Credo.Check.Refactor.ABCSize, false},
         {Credo.Check.Refactor.AppendSingleItem, false},
         {Credo.Check.Refactor.DoubleBooleanNegation, false},
         {Credo.Check.Refactor.ModuleDependencies, false},
+        {Credo.Check.Refactor.PipeChainStart, false},
         {Credo.Check.Refactor.VariableRebinding, false},
         {Credo.Check.Warning.MapGetUnsafePass, false},
         {Credo.Check.Warning.UnsafeToAtom, false},
