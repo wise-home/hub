@@ -9,7 +9,7 @@ defmodule Hub.Mixfile do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      dialyzer: [ignore_warnings: "dialyzer.ignore-warnings"],
+      dialyzer: dialyzer(),
       description: description(),
       package: package()
     ]
@@ -26,7 +26,7 @@ defmodule Hub.Mixfile do
     [
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 0.4", only: [:dev, :test]}
+      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev, :test]}
     ]
   end
 
@@ -44,6 +44,14 @@ defmodule Hub.Mixfile do
         github: "https://github.com/wise-home/hub",
         docs: "https://hexdocs.pm/hub/"
       }
+    ]
+  end
+
+  defp dialyzer do
+    [
+      plt_add_apps: [],
+      ignore_warnings: "dialyzer_ignore.exs",
+      list_unused_filters: true
     ]
   end
 end
