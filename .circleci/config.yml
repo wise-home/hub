@@ -70,8 +70,8 @@ jobs:
         environment:
           <<: *default_env
           ELIXIR_VERSION: "1.10.1-otp-22"
-          ERLANG_VERSION: "22.2.5"
-          CACHE_VERSION: "v3"
+          ERLANG_VERSION: "22.2.6"
+          CACHE_VERSION: "v4"
 
   "elixir 1.10 - erlang 22.1":
     <<: *default_build
@@ -103,8 +103,8 @@ jobs:
         environment:
           <<: *default_env
           ELIXIR_VERSION: "1.9.4-otp-22"
-          ERLANG_VERSION: "22.2.5"
-          CACHE_VERSION: "v5"
+          ERLANG_VERSION: "22.2.6"
+          CACHE_VERSION: "v6"
 
   "elixir 1.9 - erlang 22.1":
     <<: *default_build
