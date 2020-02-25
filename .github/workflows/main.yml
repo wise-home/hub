@@ -1,0 +1,37 @@
+name: CI
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: OTP ${{ matrix.otp }} / Elixir ${{ matrix.elixir }}
+    strategy:
+      matrix:
+        otp: [22.0.7, 22.1.8.1, 22.2.6]
+        elixir: [1.9.4, 1.10.1]
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout
+
+      - uses: actions/cache@v1
+        name: Cache PLT
+        with:
+          path: _build
+          key: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}
+
+      - uses: actions/setup-elixir@v1.2.0
+        name: Setup elixir
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+
+      - run: mix deps.get
+      - run: mix deps.compile --force
+      - run: mix compile --force
+      - run: mix test --trace
+      - run: mix credo
+      - run: mix dialyzer
+      - run: mix format --check-formatted
