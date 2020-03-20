@@ -26,7 +26,7 @@ defmodule Hub.Mixfile do
     [
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev, :test]}
+      {:dialyxir, "~> 1.0.0", only: [:dev, :test]}
     ]
   end
 
