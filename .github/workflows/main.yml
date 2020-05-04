@@ -17,12 +17,20 @@ jobs:
         name: Checkout
 
       - uses: actions/cache@v1
-        name: Cache PLT
+        name: Cache deps
+        with:
+          path: deps
+          key: deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
+
+      - uses: actions/cache@v1
+        name: Cache _build
         with:
           path: _build
-          key: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
+          key: build-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}
+            build-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
       - uses: actions/setup-elixir@v1.2.0
         name: Setup elixir
@@ -31,8 +39,6 @@ jobs:
           elixir-version: ${{matrix.elixir}}
 
       - run: mix deps.get
-      - run: mix deps.compile --force
-      - run: mix compile --force
       - run: mix test --trace
       - run: mix credo
       - run: mix dialyzer
