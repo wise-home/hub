@@ -162,10 +162,13 @@ Tests are run with `mix test`. When submitting new code, make sure `mix credo` a
 
 ## Versions of Elixir and Erlang
 
-Hub will be tested against the two latest minor versions of Elixir and the three latest minor versions of Erlang.
+Hub will usually be tested against the two latest minor versions of Elixir and the three latest minor versions of
+Erlang.
 In all cases the latest patch version is used.
 
 E.g. if the latest Elixir is 1.7.2 and the latest Erlang is 21.0.5, we test against:
 
 * Elixir: 1.7.2 and 1.6.6
 * Erlang: 21.0.5, 20.3.8.6 and 20.2.4
+
+See in the github actions script, which versions are officially supported.
