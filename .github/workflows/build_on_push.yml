@@ -39,7 +39,8 @@ jobs:
           elixir-version: ${{matrix.elixir}}
 
       - run: mix deps.get
-      - run: mix test --trace
+      - run: mix compile
+      - run: mix test --trace --preload-modules
       - run: mix credo
       - run: mix dialyzer
       - run: mix format --check-formatted
