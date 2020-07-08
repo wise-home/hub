@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         otp: ["22.2.8", "22.3.4", "23.0.2"]
-        elixir: ["1.10.3"]
+        elixir: ["1.10.4"]
     env:
       MIX_ENV: test
     steps:
