@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.6.6 - 2020-10-13
+
+Nothing has changed in the code base, but we regularly update the development dependencies and versions of elixir and
+erlang used for builds in CI.
+
+Releasing new version to get docs out in the latest version of ex_doc
+
+* Update erlang 21.3.6 -> 23.1.1
+* Update elixir 1.8.1 -> 1.11.0, 130
+* Remove support for elixir 1.9.4
+* Update credo 1.0.5 -> 1.5.0-rc.4
+* Update ex_doc 0.20.2 -> 0.23.0
+* Update makeup_elixir 0.14.0 -> 0.15.0, 130
+* Update makeup 1.0.0 -> 1.0.5, 130
+* Update nimble_parsec 0.5.0 -> 1.1.0, 130
+* Update jason 1.1.2 -> 1.2.2
+* Update earmark 1.3.2 -> 1.4.9
+* Update dialyxir 0.5.1 -> 1.0.0
+* Update erlex 0.2.5 -> 0.2.6
+
 ## 0.6.5 - 2019-04-23
 
 * Use ExDoc 0.20.2
