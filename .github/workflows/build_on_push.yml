@@ -12,6 +12,7 @@ jobs:
         elixir: ["1.10.4", "1.11.2"]
     env:
       MIX_ENV: test
+      cache_version: v2
     steps:
       - uses: actions/checkout@v2
         name: Checkout
@@ -20,19 +21,19 @@ jobs:
         name: Cache deps
         with:
           path: deps
-          key: deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
+          key: deps-${{ env.cache_version }}-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
+            deps-${{ env.cache_version }}-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
       - uses: actions/cache@v1
         name: Cache _build
         with:
           path: _build
-          key: build-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
+          key: build-${{ env.cache_version }}-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            build-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
+            build-${{ env.cache_version }}-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
-      - uses: actions/setup-elixir@v1.2.1
+      - uses: actions/setup-elixir@v1
         name: Setup elixir
         with:
           otp-version: ${{matrix.otp}}
