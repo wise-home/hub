@@ -1,6 +1,6 @@
 ---
 title: Update deps
-labels: type:chore, state:ready
+labels: type:support
 ---
 * [ ] Update hex dependencies
 * [ ] Update elixir
