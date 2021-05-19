@@ -30,7 +30,7 @@ defmodule Hub.Channel do
   Subscribes with the quoted pattern
   """
   @spec subscribe_quoted(pid, any, subscribe_options) :: {:ok, subscription_ref} | {:error, reason :: String}
-  def subscribe_quoted(channel, quoted_pattern, options \\ []) do
+  def subscribe_quoted(channel, quoted_pattern, options \\ []) when is_pid(channel) do
     map_options = options |> Enum.into(%{})
     do_subscribe_quoted(channel, quoted_pattern, map_options)
   end
@@ -40,7 +40,7 @@ defmodule Hub.Channel do
   Returns number of subscribers that the message was sent to.
   """
   @spec publish(pid, any) :: non_neg_integer
-  def publish(channel, message) do
+  def publish(channel, message) when is_pid(channel) do
     GenServer.call(channel, {:publish, message})
   end
 
@@ -48,7 +48,7 @@ defmodule Hub.Channel do
   Get all subscribers from channel
   """
   @spec subscribers(pid) :: [Subscriber.t()]
-  def subscribers(channel) do
+  def subscribers(channel) when is_pid(channel) do
     GenServer.call(channel, :subscribers)
   end
 
@@ -56,10 +56,34 @@ defmodule Hub.Channel do
   Unsubscribes using the reference returned on subscribe
   """
   @spec unsubscribe(subscription_ref) :: :ok
-  def unsubscribe({channel, ref}) do
+  def unsubscribe({channel, ref}) when is_pid(channel) and is_reference(ref) do
     case GenServer.whereis(channel) do
       pid when is_pid(pid) ->
         GenServer.cast(pid, {:unsubscribe, ref})
+
+      nil ->
+        :ok
+    end
+  end
+
+  @doc """
+  Unsubscribes and flushes any messages in the mailbox that matches the subscribed pattern
+  """
+  @spec unsubscribe_and_flush(subscription_ref) :: :ok
+  def unsubscribe_and_flush({channel, ref} = subscription_ref) when is_pid(channel) and is_reference(ref) do
+    case GenServer.whereis(channel) do
+      pid when is_pid(pid) ->
+        channel
+        |> subscribers()
+        |> Enum.filter(&(&1.ref == ref))
+        |> case do
+          [] ->
+            :ok
+
+          [subscriber] ->
+            unsubscribe(subscription_ref)
+            flush(subscriber)
+        end
 
       nil ->
         :ok
@@ -217,5 +241,31 @@ defmodule Hub.Channel do
             Map.delete(subscribers, subscriber.ref)
           end)
     }
+  end
+
+  defp flush(subscriber) do
+    if subscriber.multi do
+      Enum.each(subscriber.pattern, &do_flush/1)
+    else
+      do_flush(subscriber.pattern)
+    end
+  end
+
+  defp do_flush(quoted_pattern) do
+    {removed_any, _} =
+      quote do
+        receive do
+          unquote(quoted_pattern) -> true
+        after
+          0 -> false
+        end
+      end
+      |> Code.eval_quoted()
+
+    if removed_any do
+      do_flush(quoted_pattern)
+    else
+      :ok
+    end
   end
 end

@@ -19,6 +19,7 @@ defmodule Hub do
   Unsubscribes using the reference returned on subscribe
   """
   defdelegate unsubscribe(ref), to: Channel
+  defdelegate unsubscribe_and_flush(ref), to: Channel
 
   @doc """
   Convenience macro for subscribing without the need to unquote the pattern.

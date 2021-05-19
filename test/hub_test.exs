@@ -259,4 +259,33 @@ defmodule HubTest do
     assert_receive(:done)
     assert_receive(:done)
   end
+
+  test "unsubscribe_and_flush" do
+    {:ok, subscription} = Hub.subscribe("test22", :hello)
+
+    # Ensure that this is not flushed, since it does not match :hello
+    send(self(), :other_message)
+
+    # This message should be received but flushed
+    assert 1 = Hub.publish("test22", :hello)
+
+    Hub.unsubscribe_and_flush(subscription)
+
+    # This message should not be received, since we unsubscribed
+    assert 0 = Hub.publish("test22", :hello)
+
+    refute_received :hello
+    assert_receive :other_message
+  end
+
+  test "unsubscribe_and_flush with multiple patterns" do
+    {:ok, subscription} = Hub.subscribe("test23", [:hello, :goodbye], multi: true)
+    Hub.publish("test23", :hello)
+    Hub.publish("test23", :goodbye)
+
+    Hub.unsubscribe_and_flush(subscription)
+
+    refute_received :hello
+    refute_received :goodbye
+  end
 end
