@@ -120,8 +120,21 @@ Hub.subscribe("my channel", %{size: 42})
 To unsubscribe, use the returned reference given when subscribing:
 
 ```elixir
-{:ok, subscription} = Hub.subscribe("my cchannel", {:hello, name})
+{:ok, subscription} = Hub.subscribe("my channel", {:hello, name})
 Hub.unsubscribe(subscription)
+```
+
+To avoid race conditions, it can be useful to also flush matched messages, so they don't leak. Example:
+
+```elixir
+{:ok, subscription} = Hub.subscribe("my channel", {:hello, name})
+
+receive do
+  {:hello, name} -> IO.puts("Hello #{name}")
+after
+  5_000 ->
+    Hub.unsubscribe_and_flush(subscription)
+end
 ```
 
 ## Examples
