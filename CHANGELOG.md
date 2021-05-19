@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.0 - 2021-05-19
+
+Bumping to 1.0.0, since this has been used for years in production.
+
+Added features:
+
+* Added Hub.unsubscribe_and_flush, #178
+
+Update dev deps:
+
+* Update erlang 23.1.1 -> 24.0
+* Update earmark_parser 1.4.10 -> 1.4.13
+* Update ex_doc 0.23.0 -> 0.24.2
+* Update elixir 1.11.0 -> 1.11.4
+* Update dialyxir 1.0.0 -> 1.1.0
+* Update credo 1.5.0-rc.4 -> 1.5.5
+* Update makeup_elixir 0.15.0 -> 0.15.1
+* Update file_system 0.2.9 -> 0.2.10, 144
+
 ## 0.6.6 - 2020-10-13
 
 Nothing has changed in the code base, but we regularly update the development dependencies and versions of elixir and
