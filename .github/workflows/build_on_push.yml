@@ -2,6 +2,11 @@ name: Build on push
 
 on: push
 
+# Set the GITHUB_TOKEN to a restricted permission we don't need anything else than this.
+# This will disable all other permissions than metadata: read, which is always enabled.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
