@@ -194,11 +194,12 @@ defmodule HubTest do
   end
 
   test "multiple subscriptions with count: 1 in process that dies" do
-    spawn(fn ->
+    Task.async(fn ->
       {:ok, _ref} = Hub.subscribe("test18", {:hello, _name}, count: 1)
       {:ok, _ref} = Hub.subscribe("test18", {:goodbye, _name})
       Hub.publish("test18", {:hello, "World"})
     end)
+    |> Task.await()
 
     assert Hub.subscribers("test18") == []
   end
