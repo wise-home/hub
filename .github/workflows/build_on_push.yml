@@ -45,6 +45,12 @@ jobs:
           elixir-version: ${{matrix.elixir}}
 
       - run: mix deps.get
+
+      - name: Check that no unused deps exist
+        run: |
+          mix deps.clean --unused --unlock
+          git diff --exit-code
+
       - run: mix compile
       - run: mix test --trace --preload-modules --include skip
       - run: mix credo
