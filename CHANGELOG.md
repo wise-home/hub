@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.0.1 - 2021-11-24
+
+No significant code changes in this release.
+This version was created to release updated docs.
+
+### Dev dependency updates:
+
+* Update erlang 24.0 -> 24.1.7 (Three latest minor versions supported)
+* Update elixir 1.11.4 -> 1.12.3 (Two latest minor versions supported)
+* Update ex_doc 0.24.2 -> 0.26.0
+* Update credo 1.5.5 -> 1.6.1
+* Update nimble_parsec 1.1.0 -> 1.2.0
+* Update earmark_parser 1.4.13 -> 1.4.17
+* Update makeup_elixir 0.15.1 -> 0.15.2
+
+### Other updates
+
+* Added unsubscribe_and_flush to README
+* CI: Check that no unsused deps are present
+
 ## 1.0.0 - 2021-05-19
 
 Bumping to 1.0.0, since this has been used for years in production.
