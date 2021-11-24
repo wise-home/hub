@@ -6,8 +6,10 @@ defmodule Hub do
 
   Example:
 
-    Hub.subscribe("global", %{count: count} when count > 42)
-    Hub.publish("global", %{count: 45, message: "You rock!"})
+  ```
+  Hub.subscribe("global", %{count: count} when count > 42)
+  Hub.publish("global", %{count: 45, message: "You rock!"})
+  ```
   """
 
   alias Hub.Channel
@@ -16,7 +18,7 @@ defmodule Hub do
   alias Hub.Subscriber
 
   @doc """
-  Unsubscribes using the reference returned on subscribe
+  Unsubscribes using the reference returned on subscribe.
   """
   defdelegate unsubscribe(ref), to: Channel
   defdelegate unsubscribe_and_flush(ref), to: Channel
@@ -24,9 +26,11 @@ defmodule Hub do
   @doc """
   Convenience macro for subscribing without the need to unquote the pattern.
 
-  example:
+  Example:
 
-    Hub.subscribe("global", %{count: count} when count > 42)
+  ```
+  Hub.subscribe("global", %{count: count} when count > 42)
+  ```
   """
   defmacro subscribe(channel_name, pattern, options \\ []) do
     quote do
@@ -38,8 +42,8 @@ defmodule Hub do
   end
 
   @doc """
-  Publishes the term to all subscribers that matches it
-  Returns the number of subscribers that got the message
+  Publishes the term to all subscribers that matches it.
+  Returns the number of subscribers that got the message.
   """
   @spec publish(String.t(), any) :: non_neg_integer
   def publish(channel_name, term) do
@@ -53,11 +57,13 @@ defmodule Hub do
   end
 
   @doc """
-  Subscribes to the quoted pattern in the given channel_name
+  Subscribes to the quoted pattern in the given channel_name.
 
-  example:
+  Example:
 
+  ```
   Hub.subscribe("global", quote do: %{count: count} when count > 42)
+  ```
   """
   @spec subscribe_quoted(String.t(), any, Channel.subscribe_options()) ::
           {:ok, Channel.subscription_ref()} | {:error, reason :: String.t()}
@@ -67,7 +73,7 @@ defmodule Hub do
   end
 
   @doc """
-  Get all subscribers from channel
+  Get all subscribers from channel.
   """
   @spec subscribers(String.t()) :: [Subscriber.t()]
   def subscribers(channel_name) do
@@ -100,14 +106,14 @@ defmodule Hub do
     ast
   end
 
-  def traverse_pin({:^, _, [{name, _, atom}]} = term, bindings) when is_atom(atom) do
+  defp traverse_pin({:^, _, [{name, _, atom}]} = term, bindings) when is_atom(atom) do
     case Keyword.fetch(bindings, name) do
       {:ok, value} -> Macro.escape(value)
       :error -> term
     end
   end
 
-  def traverse_pin(ast, _bindings) do
+  defp traverse_pin(ast, _bindings) do
     ast
   end
 
