@@ -5,7 +5,7 @@ defmodule Hub.Mixfile do
     [
       app: :hub,
       version: "1.0.1",
-      elixir: "~> 1.11",
+      elixir: "~> 1.13",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
