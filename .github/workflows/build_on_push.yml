@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         otp: ["25.1.2.1", "25.2.3", "25.3.1"]
-        elixir: ["1.13.4", "1.14.4"]
+        elixir: ["1.13.4", "1.14.5"]
     env:
       MIX_ENV: test
       cache_version: v3
