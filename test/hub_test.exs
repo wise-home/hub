@@ -155,7 +155,8 @@ defmodule HubTest do
   end
 
   test "pin function call should raise error" do
-    assert_raise CompileError, ~r/undefined function fun/, fn ->
+    # The following is logged to the console: "undefined function fun/1 (there is no such import)"
+    assert_raise CompileError, "nofile: cannot compile file (errors have been logged)", fn ->
       Hub.subscribe("test13", ^fun(var), bind_quoted: [fun: 42])
       Hub.publish("test13", "message")
     end
