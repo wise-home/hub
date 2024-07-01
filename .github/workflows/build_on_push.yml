@@ -13,24 +13,24 @@ jobs:
     name: OTP ${{ matrix.otp }} / Elixir ${{ matrix.elixir }}
     strategy:
       matrix:
-        otp: ["25.1.2.1", "25.2.3", "25.3.1"]
-        elixir: ["1.13.4", "1.14.5"]
+        otp: ["25", "26"]
+        elixir: ["1.15.x", "1.16.x", "1.17.x"]
     env:
       MIX_ENV: test
       cache_version: v3
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         name: Checkout
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v4
         name: Cache deps
         with:
           path: deps
-          key: deps-${{ env.cache_version }}-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
+          key: deps-${{ env.cache_version }}-${{ runner.os }}-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            deps-${{ env.cache_version }}-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
+            deps-${{ env.cache_version }}-${{ runner.os }}
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v4
         name: Cache _build
         with:
           path: _build
